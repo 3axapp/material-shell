@@ -54,6 +54,7 @@
             <description>Width of the vertical panel and height of the horizontal panels. Modifying this may lead to blurry icons.</description>
         </key>
         <key name="panel-opacity" type="i">
+            <range min="0" max="100"/>
             <default>100</default>
             <summary>Panel opacity</summary>
             <description>Change the opacity of Panels</description>
@@ -69,6 +70,7 @@
             <description>Show icons for the workspaces in color</description>
         </key>
         <key name="surface-opacity" type="i">
+            <range min="0" max="100"/>
             <default>100</default>
             <summary>Surface opacity</summary>
             <description>Change the opacity of other UI elements</description>

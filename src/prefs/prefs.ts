@@ -51,6 +51,16 @@ function enumValues(settings: Gio.Settings, key: string): string[] {
         .recursiveUnpack() as string[];
 }
 
+/** The bounds of a key that declares a <range> in the gschema, if it does. */
+function keyRange(
+    settings: Gio.Settings,
+    key: string
+): [number, number] | null {
+    const range = settings.settings_schema.get_key(key).get_range();
+    if (range.get_child_value(0).get_string()[0] !== 'range') return null;
+    return range.get_child_value(1).recursiveUnpack() as [number, number];
+}
+
 function rgbaToHexString(rgba: Gdk.RGBA) {
     const component = (value: number) =>
         Math.round(Math.min(Math.max(value, 0), 1) * 255)
@@ -138,7 +148,10 @@ function addSpinRow(
     step: number,
     digits: number
 ) {
-    const row = Adw.SpinRow.new_with_range(lower, upper, step);
+    // A range in the gschema binds every writer, not just this window, so it
+    // wins over the bounds the caller guesses at.
+    const [from, to] = keyRange(settings, key) ?? [lower, upper];
+    const row = Adw.SpinRow.new_with_range(from, to, step);
     row.set(keyLabels(settings, key));
     row.digits = digits;
     settings.bind(
