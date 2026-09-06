@@ -1,7 +1,7 @@
 extension = material-shell@papyelgringo
 extension_tool = gnome-extensions
 
-.PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist clean sass
+.PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist clean sass test
 
 dist:
 	rm -rf dist
@@ -36,6 +36,9 @@ zip_dist:
 	cd dist && zip -r ../dist.zip *
 
 build_prod: npm_dependencies compile zip_dist
+
+test: compile
+	gjs -m tests/prefs-check.js
 
 clean:
 	rm -rf build
