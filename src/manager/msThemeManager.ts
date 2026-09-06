@@ -316,13 +316,23 @@ export class MsThemeManager extends MsManager {
     }
 
     async regenerateStylesheet() {
+        await this.buildThemeStylesheetToFile(this.themeFile);
+
+        // Unloading has to stay next to loading, with nothing awaited in
+        // between. Two overlapping calls would otherwise run as unload, unload,
+        // load, load: the second unload finds nothing to remove, both loads go
+        // through, and St ends up holding the stylesheet twice. The next unload
+        // then drops one entry but clears both of St's lookup tables, so the
+        // remaining entry has no file left to resolve to and
+        // st_theme_get_custom_stylesheets() yields a null in its place. That
+        // null makes Main.loadTheme() throw, and since it throws before
+        // set_theme(), the theme freezes until the session restarts.
         this.unloadStylesheet();
         if (!this.theme.application_stylesheet) {
             Main.layoutManager.uiGroup.add_style_class_name('no-theme');
         }
-
-        await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
+
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this.themeContext.set_theme(this.theme);
             Main.reloadThemeResource();
