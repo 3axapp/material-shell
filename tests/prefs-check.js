@@ -113,6 +113,19 @@ check(
 panelSizeRow.value = 64;
 check('changing a spin row stores the value', theme.get_int('panel-size'), 64);
 
+// Opacity is a percentage the extension divides by 100 and uses as an alpha,
+// so the gschema caps it at 100 and the row has to follow the schema, not the
+// bounds hardcoded in prefs.js.
+for (const title of ['Panel opacity', 'Surface opacity']) {
+    const row = rows.get(title);
+    check(`'${title}' stops at 100`, row.adjustment.upper, 100);
+}
+check(
+    'a key without a range keeps the bounds from prefs.js',
+    rows.get('Panels size').adjustment.upper,
+    1000
+);
+
 const ratioRow = rows.get('Ratio of the ratio layout');
 check('fractional spin rows show two digits', ratioRow.digits, 2);
 check(
