@@ -70,6 +70,7 @@ export class MsThemeManager extends MsManager {
     primaryColor: Cogl.Color;
     cursorType: Clutter.CursorType;
     throttledStageSetCursorType: () => void;
+    throttledRegenerateStylesheet: () => void;
 
     constructor() {
         super();
@@ -97,6 +98,19 @@ export class MsThemeManager extends MsManager {
             16,
             { leading: false }
         );
+        // Rebuilding the stylesheet means a fresh StTheme over the shell's own
+        // CSS and a restyle of the whole stage — around 17ms before any actor
+        // is touched. Holding a spinner in the preferences writes its key some
+        // twenty times a second, which is more than the main loop can absorb.
+        // Apply the first change at once, then no more than five a second, and
+        // always finish on the value the user settled on.
+        this.throttledRegenerateStylesheet = throttle(
+            () => {
+                this.regenerateStylesheet();
+            },
+            200,
+            { leading: true, trailing: true }
+        );
         this.observe(this.themeContext, 'changed', () => {
             Debug.log('theme changed');
             this.theme = this.themeContext.get_theme();
@@ -122,12 +136,12 @@ export class MsThemeManager extends MsManager {
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
             this.themeValue = schema.get_string('theme');
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::primary-color', (schema) => {
             this.primary = schema.get_string('primary-color');
             this.primaryColor = parseCoglColor(this.primary);
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(
             this.themeSettings,
@@ -144,10 +158,10 @@ export class MsThemeManager extends MsManager {
             }
         );
         this.observe(this.themeSettings, 'changed::panel-opacity', () => {
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::surface-opacity', () => {
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::panel-size', () => {
             this.emit(msThemeSignalEnum.PanelSizeChanged);
@@ -316,13 +330,23 @@ export class MsThemeManager extends MsManager {
     }
 
     async regenerateStylesheet() {
+        await this.buildThemeStylesheetToFile(this.themeFile);
+
+        // Unloading has to stay next to loading, with nothing awaited in
+        // between. Two overlapping calls would otherwise run as unload, unload,
+        // load, load: the second unload finds nothing to remove, both loads go
+        // through, and St ends up holding the stylesheet twice. The next unload
+        // then drops one entry but clears both of St's lookup tables, so the
+        // remaining entry has no file left to resolve to and
+        // st_theme_get_custom_stylesheets() yields a null in its place. That
+        // null makes Main.loadTheme() throw, and since it throws before
+        // set_theme(), the theme freezes until the session restarts.
         this.unloadStylesheet();
         if (!this.theme.application_stylesheet) {
             Main.layoutManager.uiGroup.add_style_class_name('no-theme');
         }
-
-        await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
+
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this.themeContext.set_theme(this.theme);
             Main.reloadThemeResource();
