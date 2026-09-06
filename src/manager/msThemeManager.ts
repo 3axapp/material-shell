@@ -70,6 +70,7 @@ export class MsThemeManager extends MsManager {
     primaryColor: Cogl.Color;
     cursorType: Clutter.CursorType;
     throttledStageSetCursorType: () => void;
+    throttledRegenerateStylesheet: () => void;
 
     constructor() {
         super();
@@ -97,6 +98,19 @@ export class MsThemeManager extends MsManager {
             16,
             { leading: false }
         );
+        // Rebuilding the stylesheet means a fresh StTheme over the shell's own
+        // CSS and a restyle of the whole stage — around 17ms before any actor
+        // is touched. Holding a spinner in the preferences writes its key some
+        // twenty times a second, which is more than the main loop can absorb.
+        // Apply the first change at once, then no more than five a second, and
+        // always finish on the value the user settled on.
+        this.throttledRegenerateStylesheet = throttle(
+            () => {
+                this.regenerateStylesheet();
+            },
+            200,
+            { leading: true, trailing: true }
+        );
         this.observe(this.themeContext, 'changed', () => {
             Debug.log('theme changed');
             this.theme = this.themeContext.get_theme();
@@ -122,12 +136,12 @@ export class MsThemeManager extends MsManager {
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
             this.themeValue = schema.get_string('theme');
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::primary-color', (schema) => {
             this.primary = schema.get_string('primary-color');
             this.primaryColor = parseCoglColor(this.primary);
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(
             this.themeSettings,
@@ -144,10 +158,10 @@ export class MsThemeManager extends MsManager {
             }
         );
         this.observe(this.themeSettings, 'changed::panel-opacity', () => {
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::surface-opacity', () => {
-            this.regenerateStylesheet();
+            this.throttledRegenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::panel-size', () => {
             this.emit(msThemeSignalEnum.PanelSizeChanged);
