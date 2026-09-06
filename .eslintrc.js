@@ -52,6 +52,7 @@ module.exports = {
         logError: false,
         print: false,
         printerr: false,
+        TextDecoder: false,
         window: false,
         global: false,
         _: false,
