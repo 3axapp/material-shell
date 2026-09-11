@@ -5,6 +5,7 @@ import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTilin
 import { logAssert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
+import { describeActor, probe } from 'src/utils/probe10';
 import { TranslationHelper } from 'src/utils/transition';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
@@ -59,6 +60,12 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         };
 
         reparentActor(actor, this.tileableContainer);
+        probe(
+            'displayTileable mon' + this.msWorkspace.monitor.index,
+            'external=' + this.msWorkspace.monitorIsExternal,
+            'isDisplayed=' + this.msWorkspace.isDisplayed(),
+            'actor=' + describeActor(actor)
+        );
         if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
     }
 
