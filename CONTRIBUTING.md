@@ -1,3 +1,8 @@
+# Developer Documentation
+Notes for working on this fork — build and test loop, file map, how the parts interact,
+and where to start with common problems — live in
+[documentation/development](documentation/development) (written in Russian).
+
 # Creating Issues
 Please make sure you are on the latest version before submitting any issues.
 Before clicking submit, run `git pull` and restart GNOME Shell. If the issue persists, please follow these steps:
