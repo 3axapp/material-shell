@@ -194,7 +194,7 @@ CSS собирается при сборке, а значения пользов
 Запустите `gjs -m tests/prefs-measure.js` после `make compile`. Он печатает
 запрошенную ширину каждого виджета деревом и показывает, кто её раздувает.
 Прецедент — [#8](https://github.com/3axapp/material-shell/issues/8);
-подробности в [tests/README.md](../../tests/README.md).
+подробности в [TESTING.md](TESTING.md#тесты-окна-настроек).
 
 ### Добавить настройку
 

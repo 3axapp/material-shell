@@ -14,6 +14,7 @@
 | [FILES.md](documentation/development/FILES.md) | Что где лежит и куда класть новое |
 | [ARCHITECTURE.md](documentation/development/ARCHITECTURE.md) | Схемы: жизненный цикл, путь окна, фокус, тема, состояние |
 | [PLAYBOOKS.md](documentation/development/PLAYBOOKS.md) | Пути поиска решения по типовым проблемам |
+| [TESTING.md](documentation/development/TESTING.md) | Как запускать тесты и как писать новые |
 
 ## Что важно знать до первой правки
 
@@ -21,7 +22,10 @@
   disable` и `enable` код не перечитывают: шелл кэширует ES-модуль. Проверять
   удобнее во вложенном шелле — раздел
   [«Вложенный шелл»](documentation/development/README.md#вложенный-шелл).
-- Сборка — `make compile`, тесты окна настроек — `make test`.
+- Сборка — `make compile`, тесты окна настроек — `make test`, тесты внутри
+  шелла — `make test-shell` (открывает окно Mdk на несколько секунд, нужен
+  `mutter-devkit`). Как писать тесты — в
+  [TESTING.md](documentation/development/TESTING.md).
 - Object spread и rest (`{...a}`) в `src/` ломают сборку: их не понимает
   esprima внутри `scripts/transpile.ts`. Пиши `Object.assign`.
 - Рабочая ветка — `gnome-50`. Задача делается в ветке `issue-N`, сообщения

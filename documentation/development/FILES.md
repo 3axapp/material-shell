@@ -10,7 +10,7 @@
 | `src/` | Исходники расширения на TypeScript. Разобраны ниже. |
 | `schemas/` | gsettings-схемы: `bindings`, `layouts`, `theme`, `tweaks`. Ключ в `metadata.json` — имя схемы, по нему её находит `getSettings()`. |
 | `assets/` | Иконки: логотип для заставки, `tiling/` для переключателя раскладок и символьные значки интерфейса. Копируются в `dist/assets` как есть. |
-| `tests/` | Проверки окна настроек в отдельном `gjs`. Подробности — [tests/README.md](../../tests/README.md). |
+| `tests/` | Тесты: окна настроек — в отдельном `gjs`, поведения расширения — внутри вложенного шелла (`tests/shell/`). Подробности — [TESTING.md](TESTING.md). |
 | `scripts/transpile.ts` | Второй шаг сборки: переписывает вывод `tsc` так, чтобы GObject-классы работали в GJS. См. [README](README.md#сборка). |
 | `scripts/install.py` | `make install`: делает `~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` символической ссылкой на `dist/` и включает расширение. |
 | `@types/` | Типы поверх пакетов `@girs/*`. `ambient.d.ts` подключает объявления `gi://` и `resource:///` из `@girs/gnome-shell` — версия пакета должна совпадать с целевой версией шелла. `shell-internals.d.ts` описывает приватные поля gnome-shell и mutter, которыми мы пользуемся; `shell-modules.d.ts` — модули шелла, которых в `@girs` нет; `mod.d.ts` — глобальные объявления и дополнения к типам GObject, Clutter, Soup. |
@@ -150,3 +150,4 @@
 | Службу, живущую всё время работы | `src/manager/`, наследник `MsManager` | Создание в `enable()`, `destroy()` в `disable()`, статический геттер в `extension.ts`. |
 | Подмену функции шелла | `src/module/` | Вернуть оригинал в `destroy()`; внести в список в [PLAYBOOKS.md](PLAYBOOKS.md#порт-под-новую-версию-gnome). |
 | Цвет или отступ | `src/styles/stylesheet.scss` | Только через переменные вверху файла. |
+| Тест | `tests/shell/<имя>.test.js` для поведения в шелле, `tests/prefs-check.js` для окна настроек | Как писать — в [TESTING.md](TESTING.md#как-написать-тест). |

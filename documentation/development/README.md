@@ -11,8 +11,7 @@ JavaScript. Эта ветка портирована на GNOME 50 (`shell-versi
 | [FILES.md](FILES.md) | Ищете, где лежит код, или куда положить новый. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Нужно понять, кто кого вызывает: жизненный цикл, путь окна, фокус, тема. |
 | [PLAYBOOKS.md](PLAYBOOKS.md) | Что-то сломалось или надо сделать типовую вещь — с чего начать. |
-
-Проверки окна настроек описаны отдельно, в [tests/README.md](../../tests/README.md).
+| [TESTING.md](TESTING.md) | Как запускать тесты и как писать новые. |
 
 ## Окружение
 
@@ -20,6 +19,7 @@ JavaScript. Эта ветка портирована на GNOME 50 (`shell-versi
 - `node` и `npm`: TypeScript, rollup и sass ставятся в `node_modules`.
 - `gjs`, `glib-compile-schemas`, `glib-compile-resources` — для сборки схем и
   для `make test`.
+- `mutter-devkit` — для [вложенного шелла](#вложенный-шелл) и `make test-shell`.
 
 ## Сборка
 
@@ -28,6 +28,7 @@ make install     # npm install, make compile, ссылка ~/.local/share/gnome-
 make compile     # только сборка в dist/
 npm run dev      # сборка при каждом сохранении (tsc-watch)
 make test        # проверки окна настроек
+make test-shell  # тесты внутри вложенного шелла, см. TESTING.md
 make build_prod  # dist.zip для extensions.gnome.org
 ```
 
@@ -103,39 +104,33 @@ test -f "$MS/dist/extension.js" || make -C "$MS" compile
 mkdir -p "$SB/.local/share/gnome-shell/extensions"
 ln -sfn "$MS/dist" "$SB/.local/share/gnome-shell/extensions/material-shell@papyelgringo"
 env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME HOME="$SB" dbus-run-session -- sh -c '
-    dconf write /org/gnome/shell/enabled-extensions "@as []"
+    dconf write /org/gnome/shell/enabled-extensions "[\"material-shell@papyelgringo\"]"
     dconf write /org/gnome/shell/disable-user-extensions false
-    # Расширение включаем только после того, как Mdk создаст свой монитор:
-    # тогда этот монитор единственный и основной, и панели видно в окне.
-    ( for i in $(seq 400); do
-          gdbus call --session --dest org.gnome.Mutter.DisplayConfig \
-              --object-path /org/gnome/Mutter/DisplayConfig \
-              --method org.gnome.Mutter.DisplayConfig.GetCurrentState 2>/dev/null |
-              grep -q "Meta-" && break
-      done
-      dconf write /org/gnome/shell/enabled-extensions "[\"material-shell@papyelgringo\"]" ) &
     exec gnome-shell --devkit --wayland-display ms-devkit
 ' 2>&1 | tee "$SB/log"
 ```
 
-Порядок здесь важен. Шелл стартует раньше, чем Mdk создаёт свой монитор, а
-`MsMain` требует основной монитор и без него падает на `assertNotNull`
-(`Expected value, but found null`). Если же дать монитор флагом
-`--virtual-monitor`, расширение поднимется, но основным окажется именно этот
-монитор, а окно Mdk показывает свой — и левой панели в нём не будет.
+Шелл стартует раньше, чем Mdk создаёт свой монитор. Расширение этого ждёт: в
+логе появляется `No monitor yet, waiting for one before building the
+interface`, а примерно через секунду, когда монитор появится, — обычные
+`EXTENSION LOADED`. Монитор Mdk оказывается единственным и основным, поэтому
+обе панели видны в окне.
 
-Проверить, что расширение поднялось:
-`grep -c "ENABLE EXTENSION" "$SB/log"` — должна быть одна строка, и рядом
-`EXTENSION LOADED`. В окне должны быть видны левая панель со списком столов и
-верхняя панель задач.
+Флаг `--virtual-monitor` сюда не добавляйте. Он создаёт монитор ещё до старта,
+тот становится основным, а окно Mdk показывает только свой — и левой панели в
+нём не будет.
+
+Проверить, что расширение поднялось: `grep -c "ENABLE EXTENSION" "$SB/log"`
+возвращает 1, и в логе есть `EXTENSION LOADED`. В окне видны левая панель со
+списком столов и верхняя панель задач.
 
 Если что-то пошло не так:
 
 | Что видно | Что случилось |
 |-----------|---------------|
 | Окно открылось, интерфейс обычный, в логе нет `ENABLE EXTENSION` | Каталог расширения в песочнице пуст или симлинк битый. Проверьте: `readlink -f "$SB/.local/share/gnome-shell/extensions/material-shell@papyelgringo"` — внутри должен лежать `extension.js`. |
-| Лаунчер Material Shell есть, а панелей нет | Расширение включилось раньше, чем появился монитор Mdk, или монитор задан флагом `--virtual-monitor`. Основным стал монитор, которого в окне не видно: панели на нём. Используйте команду выше, с отложенным включением. |
-| `JS ERROR: Error: Expected value, but found null` сразу после `ENABLE EXTENSION` | Расширение включилось, когда мониторов ещё не было. То же лечение. |
+| Лаунчер Material Shell есть, а панелей нет | Передан `--virtual-monitor`: основным стал монитор, которого в окне не видно, и панели на нём. |
+| `JS ERROR: Error: Expected value, but found null` сразу после `ENABLE EXTENSION` | `dist/` собран из кода без исправления [#12](https://github.com/3axapp/material-shell/issues/12), который не умеет ждать монитор. Пересоберите: `make compile`. |
 | `org.gnome.Shell already exists on bus`, процесс сразу вышел | Запущено без `dbus-run-session`. Голый `gnome-shell --devkit` внутри работающей сессии не стартует: имя на шине уже занято вашим шеллом. |
 
 - **Логи** идут в терминал и в `$SB/log`, а не в журнал. Загрузка видна
@@ -143,7 +138,7 @@ env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME HOME="$SB" dbus-run-se
   `Material Shell-Message:`.
 - **Второй монитор.** Каждый флаг `--virtual-monitor` добавляет монитор, но
   окно Mdk показывает только свой собственный, поэтому лишние мониторы видны
-  лишь в логах и через зонд. Кнопку «+» в окне Mdk я не проверял.
+  лишь в логах и через зонд. Кнопка «+» в окне Mdk не проверялась.
 - **Окно Mdk** в вашей сессии — обычное приложение, и ваш Material Shell
   отводит под него плитку. Когда окно закрывается, плитка исчезает.
 - **Остановить** — закрыть окно Mdk или нажать `Ctrl+C` в терминале.
