@@ -31,6 +31,7 @@ let modules: { destroy(): void }[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
 let _closingId: number | undefined;
+let _monitorsChangedId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
 const oldOverview = Main.overview;
@@ -134,35 +135,42 @@ export default class MaterialShellExtension
 
             //Load persistent data
             this.stateManager?.loadRegistry((state) => {
-                modules = [new RequiredSettingsModule(), new OverrideModule()];
-                this.tooltipManager = new TooltipManager();
-                this.layoutManager = new LayoutManager();
-                this.msWindowManager = new MsWindowManager();
-                this.msWorkspaceManager = new MsWorkspaceManager(
-                    state['workspaces-state']
-                );
-                this.msNotificationManager = new MsNotificationManager();
-                modules = [
-                    ...modules,
-                    (this.hotKeysModule = new HotKeysModule()),
-                ];
-                this.msThemeManager = new MsThemeManager();
-                this.msThemeManager.regenerateStylesheet();
-                if (getSettings('tweaks').get_boolean('enable-persistence')) {
-                    this.msWorkspaceManager.restorePreviousState();
-                } else {
-                    this.msWorkspaceManager.initState();
-                }
-                this.layout = new MsMain();
-                this.msWindowManager.handleExistingMetaWindows();
-                if (Main.layoutManager._startingUp) {
-                    _startupPreparedId = Main.layoutManager.connect(
-                        'startup-complete',
-                        () => this.load(true)
+                this.whenPrimaryMonitorExists(() => {
+                    modules = [
+                        new RequiredSettingsModule(),
+                        new OverrideModule(),
+                    ];
+                    this.tooltipManager = new TooltipManager();
+                    this.layoutManager = new LayoutManager();
+                    this.msWindowManager = new MsWindowManager();
+                    this.msWorkspaceManager = new MsWorkspaceManager(
+                        state['workspaces-state']
                     );
-                } else {
-                    this.load(false);
-                }
+                    this.msNotificationManager = new MsNotificationManager();
+                    modules = [
+                        ...modules,
+                        (this.hotKeysModule = new HotKeysModule()),
+                    ];
+                    this.msThemeManager = new MsThemeManager();
+                    this.msThemeManager.regenerateStylesheet();
+                    if (
+                        getSettings('tweaks').get_boolean('enable-persistence')
+                    ) {
+                        this.msWorkspaceManager.restorePreviousState();
+                    } else {
+                        this.msWorkspaceManager.initState();
+                    }
+                    this.layout = new MsMain();
+                    this.msWindowManager.handleExistingMetaWindows();
+                    if (Main.layoutManager._startingUp) {
+                        _startupPreparedId = Main.layoutManager.connect(
+                            'startup-complete',
+                            () => this.load(true)
+                        );
+                    } else {
+                        this.load(false);
+                    }
+                });
             });
             return GLib.SOURCE_REMOVE;
         });
@@ -178,6 +186,21 @@ export default class MaterialShellExtension
         } else {
             this.disableInProgress = true;
             Async.clearAllPendingTimeout();
+            if (_monitorsChangedId !== undefined) {
+                // Still waiting for a monitor: only what enable() sets up
+                // before the wait exists, and the wait itself must not fire
+                // once the extension is off.
+                Main.layoutManager.disconnect(_monitorsChangedId);
+                _monitorsChangedId = undefined;
+                if (_closingId !== undefined) {
+                    global.display.disconnect(_closingId);
+                    _closingId = undefined;
+                }
+                disableIncompatibleExtensionsModule.destroy();
+                this.stateManager?.destroy();
+                delete this.disableInProgress;
+                return;
+            }
             if (!modules) return;
             if (_closingId !== undefined) {
                 global.display.disconnect(_closingId);
@@ -201,6 +224,27 @@ export default class MaterialShellExtension
         log('---------------------');
         log('END DISABLE EXTENSION');
         log('---------------------');
+    }
+
+    /**
+     * Everything Material Shell builds hangs off the primary monitor, but
+     * gnome-shell may start before there is one: the nested devkit shell always
+     * does, and so does a session whose only screen is plugged in later. Wait
+     * for the first monitor instead of failing to enable.
+     */
+    whenPrimaryMonitorExists(callback: () => void) {
+        if (Main.layoutManager.primaryMonitor) {
+            callback();
+            return;
+        }
+        log('No monitor yet, waiting for one before building the interface');
+        const id = Main.layoutManager.connect('monitors-changed', () => {
+            if (!Main.layoutManager.primaryMonitor) return;
+            Main.layoutManager.disconnect(id);
+            _monitorsChangedId = undefined;
+            callback();
+        });
+        _monitorsChangedId = id;
     }
 
     load(disconnect: boolean) {
