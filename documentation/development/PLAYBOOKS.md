@@ -68,13 +68,14 @@ Wayland-клиентов. Перезаход дорог, поэтому идит
 
 ### Нужно прочитать исходники шелла или mutter
 
-JS-файлы шелла вшиты ресурсами в `libshell-N.so`, где `N` — номер API mutter:
-`ls /usr/lib/gnome-shell`. Утилиты `gresource` может не быть, а обычный
-`gjs` ресурсы не видит. Работает так:
+JS-файлы шелла вшиты ресурсами в `libshell-N.so`: `ls /usr/lib/gnome-shell`.
+До GNOME 50 включительно `N` — собственный номер API mutter (18 у GNOME 50),
+с GNOME 51 он равен версии GNOME. Утилиты `gresource` может не быть, а
+обычный `gjs` ресурсы не видит. Работает так:
 
 ```sh
 python3 -c "
-import ctypes; ctypes.CDLL('/usr/lib/gnome-shell/libshell-18.so')
+import ctypes; ctypes.CDLL('/usr/lib/gnome-shell/libshell-51.so')
 from gi.repository import Gio
 print(Gio.resources_lookup_data('/org/gnome/shell/ui/main.js', 0).get_data().decode())
 " > main.js
@@ -84,7 +85,8 @@ print(Gio.resources_lookup_data('/org/gnome/shell/ui/main.js', 0).get_data().dec
 
 - **Сигнатуры** классов шелла и GI-библиотек — в
   `node_modules/@girs/*/*.d.ts`. Версия `@girs/gnome-shell` в `package.json`
-  должна совпадать с версией шелла.
+  совпадает с версией шелла или предыдущая, если для новой пакетов ещё нет
+  (так с GNOME 51: стоит 50.0.4).
 - **mutter** — это C. Берите исходники той же версии, что установлена
   (`pacman -Q mutter` или аналог), с gitlab.gnome.org/GNOME/mutter. Как
   mutter раздаёт клавиатурные события, описано в `src/core/events.c`.
@@ -282,6 +284,61 @@ CSS собирается при сборке, а значения пользов
 1. Обновите `@girs/gnome-shell` и остальные `@girs/*` до новой версии и
    `shell-version` в `metadata.json`. Ошибки `tsc` покажут изменившиеся API
    GI-библиотек.
+
+   Если `@girs` для новой версии ещё нет в npm (так было с GNOME 51),
+   сравните имена вручную: что есть в `.d.ts` старой версии и пропало из
+   typelib новой. Выгрузка имён из typelib (`N` — новая версия):
+
+   ```js
+   // names.js — запуск: gjs -m names.js | LC_ALL=C sort -u > new.txt
+   import GIRepository from 'gi://GIRepository?version=3.0';
+   const N = '51';
+   const repo = GIRepository.Repository.dup_default();
+   repo.prepend_search_path(`/usr/lib/mutter-${N}`);
+   repo.prepend_search_path('/usr/lib/gnome-shell');
+   const names = new Set();
+   const each = (n, get, f) => { for (let i = 0; i < n; i++) f(get(i)); };
+   for (const ns of ['Meta', 'Clutter', 'Cogl', 'Mtk', 'St', 'Shell']) {
+       repo.require(ns, N, 0);
+       each(repo.get_n_infos(ns), i => repo.get_info(ns, i), info => {
+           names.add(info.get_name());
+           if (info instanceof GIRepository.EnumInfo)
+               each(info.get_n_values(), i => info.get_value(i), v => names.add(v.get_name().toUpperCase()));
+           if (!info.get_n_methods) return;
+           each(info.get_n_methods(), i => info.get_method(i), m => names.add(m.get_name()));
+           if (info.get_n_properties)
+               each(info.get_n_properties(), i => info.get_property(i), p => names.add(p.get_name().replaceAll('-', '_')));
+           if (info.get_n_vfuncs)
+               each(info.get_n_vfuncs(), i => info.get_vfunc(i), v => names.add(`vfunc_${v.get_name()}`));
+           if (info.get_n_fields)
+               each(info.get_n_fields(), i => info.get_field(i), f => names.add(f.get_name()));
+       });
+   }
+   print([...names].join('\n'));
+   ```
+
+   Старые имена и пересечение с нашим кодом (`18` — номер API старой
+   версии в именах пакетов `@girs`):
+
+   ```sh
+   for p in meta-18 clutter-18 cogl-18 mtk-18 st-18 shell-18; do
+       f=node_modules/@girs/$p/$p.d.ts
+       grep -oE '^\s+(readonly |static |get |set )?[A-Za-z_][A-Za-z0-9_]*\??[(:<]' "$f" |
+           sed -E 's/^\s+(readonly |static |get |set )?//; s/\??[(:<]$//'
+       grep -oE '^\s+[A-Z][A-Z0-9_]+,?$' "$f" | tr -d ' ,'
+   done | LC_ALL=C sort -u > old.txt
+   LC_ALL=C comm -23 old.txt new.txt > gone.txt
+   while read -r n; do
+       [ ${#n} -ge 4 ] && grep -rnE "\.$n\b|\b$n\(" src --include='*.ts' |
+           grep -v '^src/prefs/' | head -3 | sed "s/^/$n: /"
+   done < gone.txt
+   ```
+
+   Сортировка — только с `LC_ALL=C`, иначе `comm` молча врёт. Каждое
+   совпадение проверьте глазами: большинство — наши собственные поля
+   (`closing`, `loaded`) или camelCase-дубли свойств из `.d.ts`. `src/prefs/`
+   исключён: окно настроек живёт в отдельном процессе с Gtk и Adw, а не с
+   библиотеками шелла. На GNOME 51 настоящих совпадений не нашлось.
 2. Приватные части шелла `tsc` не проверит: их типы описаны вручную в
    `@types/shell-internals.d.ts`. Сверьте каждую с исходниками новой версии
    (как их читать — [выше](#нужно-прочитать-исходники-шелла-или-mutter)):

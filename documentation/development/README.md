@@ -2,8 +2,8 @@
 
 Material Shell — расширение GNOME Shell. Код пишется на TypeScript, собирается
 в ES-модули и работает внутри процесса `gnome-shell` вместе с его собственным
-JavaScript. Эта ветка портирована на GNOME 50 (`shell-version` в
-`metadata.json`).
+JavaScript. Эта ветка портирована на GNOME 51 (`shell-version` в
+`metadata.json`); GNOME 50 поддерживает замороженная ветка `gnome-50`.
 
 | Файл | Когда читать |
 |------|--------------|
@@ -90,7 +90,7 @@ flowchart LR
 `gnome-shell --devkit` запускает отдельный GNOME Shell в окне Mutter
 Development Kit. Окно даёт пакет `mutter-devkit`; в Arch это отдельный пакет.
 Каждый запуск — новый процесс, поэтому он загружает свежий `dist/` без
-перезахода. Проверено на GNOME 50.4.
+перезахода. Проверено на GNOME 51.0.
 
 Запускайте его только с отдельным `HOME`. Иначе вложенный Material Shell
 будет писать в ваш dconf, в `~/.local/share/gnome-shell/material-shell-state`
@@ -166,10 +166,11 @@ Looking Glass открывается через `Alt+F2` → `lg`. Экземп�
 ## Ветки и коммиты
 
 - `main` — последний коммит исходного проекта, от которого начат порт.
-- `gnome-50` — рабочая ветка порта. Всё новое попадает сюда.
-- Работа по задаче идёт в ветке `issue-N` от `gnome-50`. Сообщения
+- `gnome-51` — рабочая ветка, GNOME 51. Всё новое попадает сюда.
+- `gnome-50` — последняя версия для GNOME 50, заморожена.
+- Работа по задаче идёт в ветке `issue-N` от `gnome-51`. Сообщения
   коммитов — по-английски, с номером в начале: `issue-9 Throttle stylesheet
-  regeneration`. В `gnome-50` ветка вливается merge-коммитом
-  `Merge branch 'issue-N' into gnome-50`.
+  regeneration`. В `gnome-51` ветка вливается merge-коммитом
+  `Merge branch 'issue-N' into gnome-51`.
 - Стиль кода задают `.eslintrc.js` и `.prettierrc`: четыре пробела в коде,
   два в документации, camelCase без сокращений.

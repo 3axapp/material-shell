@@ -13,7 +13,7 @@
 | `tests/` | Тесты: окна настроек — в отдельном `gjs`, поведения расширения — внутри вложенного шелла (`tests/shell/`). Подробности — [TESTING.md](TESTING.md). |
 | `scripts/transpile.ts` | Второй шаг сборки: переписывает вывод `tsc` так, чтобы GObject-классы работали в GJS. См. [README](README.md#сборка). |
 | `scripts/install.py` | `make install`: делает `~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` символической ссылкой на `dist/` и включает расширение. |
-| `@types/` | Типы поверх пакетов `@girs/*`. `ambient.d.ts` подключает объявления `gi://` и `resource:///` из `@girs/gnome-shell` — версия пакета должна совпадать с целевой версией шелла. `shell-internals.d.ts` описывает приватные поля gnome-shell и mutter, которыми мы пользуемся; `shell-modules.d.ts` — модули шелла, которых в `@girs` нет; `mod.d.ts` — глобальные объявления и дополнения к типам GObject, Clutter, Soup. |
+| `@types/` | Типы поверх пакетов `@girs/*`. `ambient.d.ts` подключает объявления `gi://` и `resource:///` из `@girs/gnome-shell` — версия пакета совпадает с целевой версией шелла или предыдущая, если для новой пакетов ещё нет. `shell-internals.d.ts` описывает приватные поля gnome-shell и mutter, которыми мы пользуемся; `shell-modules.d.ts` — модули шелла, которых в `@girs` нет; `mod.d.ts` — глобальные объявления и дополнения к типам GObject, Clutter, Soup. |
 | `metadata.json` | Метаданные расширения. `{put_commit_there}` при сборке заменяется коротким хешем коммита. |
 | `Makefile` | Точка входа сборки: `compile`, `install`, `test`, `build_prod`. |
 | `rollup.config.js`, `rollup.config.prefs.js` | Сборка `build/` в два файла, `dist/extension.js` и `dist/prefs.js`, с разрешением алиаса `src/`. |

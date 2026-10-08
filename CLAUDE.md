@@ -1,4 +1,4 @@
-# Material Shell — форк с портом на GNOME 50
+# Material Shell — форк с портом на GNOME 51
 
 Расширение GNOME Shell на TypeScript. Код собирается в `dist/` и работает
 внутри процесса `gnome-shell`.
@@ -28,7 +28,7 @@
   [TESTING.md](documentation/development/TESTING.md).
 - Object spread и rest (`{...a}`) в `src/` ломают сборку: их не понимает
   esprima внутри `scripts/transpile.ts`. Пиши `Object.assign`.
-- Рабочая ветка — `gnome-50`. Задача делается в ветке `issue-N`, сообщения
+- Рабочая ветка — `gnome-51`. Задача делается в ветке `issue-N`, сообщения
   коммитов английские, с номером в начале: `issue-9 Throttle stylesheet
   regeneration`.
 - Правки фокуса и клавиатуры сверяй с разделом
