@@ -76,13 +76,13 @@ export default class MaterialShellExtension
     }
 
     disableInProgress: boolean | undefined;
-    emit(name: string, ...params: any[]): void {
+    emit(_name: string, ..._params: any[]): void {
         throw new Error('Method not implemented.');
     }
-    connect(name: string, callback: (...params: any[]) => void): number {
+    connect(_name: string, _callback: (...params: any[]) => void): number {
         throw new Error('Method not implemented.');
     }
-    disconnect(id: number): void {
+    disconnect(_id: number): void {
         throw new Error('Method not implemented.');
     }
 

@@ -435,7 +435,7 @@ export class WorkspaceButton extends MatButton {
         });
     }
 
-    handleDragOver(source: any, actor: Clutter.Actor, x: number, y: number) {
+    handleDragOver(source: any, _actor: Clutter.Actor, _x: number, _y: number) {
         if (source instanceof TaskBarItem) {
             return DND.DragMotionResult.MOVE_DROP;
         }

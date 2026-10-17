@@ -69,7 +69,7 @@ export class ProviderResultList extends St.BoxLayout {
         this.add_child(this.moreResultEntry);
     }
 
-    async updateSearch(newResultList: ResultMeta[], termList: string[]) {
+    async updateSearch(newResultList: ResultMeta[], _termList: string[]) {
         this.visible = newResultList.length > 0;
         this.moreResultEntry.visible =
             newResultList.length > this.maxResultLength;

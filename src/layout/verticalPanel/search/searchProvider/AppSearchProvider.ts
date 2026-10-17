@@ -28,11 +28,11 @@ export class AppSearchProvider {
         this._parentalControlsManager = ParentalControlsManager.getDefault();
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(_iconSize: number): St.Icon | null {
         return null;
     }
 
-    activateResult(id: string, terms: string[]): void {
+    activateResult(id: string, _terms: string[]): void {
         const app = Shell.AppSystem.get_default().lookup_app(id);
         if (app) {
             Me.msWindowManager!.openApp(

@@ -14,17 +14,10 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { getExtensionSettings } from 'src/utils/extension_utils';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
-import {
-    compareVersions,
-    gnomeVersionNumber,
-    parseVersion,
-} from 'src/utils/shellVersionMatch';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
-const isBeforeGnome43 =
-    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo<any, any, any> = {

@@ -5,7 +5,6 @@ const { round } = Math;
 import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
-import Meta from 'gi://Meta';
 import St from 'gi://St';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Portion, PortionBorder } from 'src/layout/msWorkspace/portion';

@@ -25,11 +25,11 @@ export class RecentSearchProvider {
         return 'Recent';
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(_iconSize: number): St.Icon | null {
         return null;
     }
 
-    activateResult(id: string, terms: string[]): void {
+    activateResult(_id: string, _terms: string[]): void {
         throw new Error(
             'Should never be called. Remap to original provider instead.'
         );

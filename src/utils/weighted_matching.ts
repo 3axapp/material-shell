@@ -49,8 +49,8 @@ export function weighted_matching(costs: number[][]): {
         do {
             // dijkstra
             done[j0] = 1;
-            let i0 = p[j0],
-                j1 = 0,
+            const i0 = p[j0];
+            let j1 = 0,
                 delta = INT_MAX;
             for (let j = 1; j < m; j++) {
                 if (done[j] === 0) {

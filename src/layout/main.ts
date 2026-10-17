@@ -137,7 +137,6 @@ export class MsMain extends St.Widget {
             id: this.connect('captured-event', (_, event: Clutter.Event) => {
                 if (!this.overviewShown) return;
                 if (event.type() === Clutter.EventType.BUTTON_PRESS) {
-                    const source = event.get_source();
                     const [x, y] = event.get_coords();
 
                     // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2

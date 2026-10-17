@@ -251,9 +251,9 @@ export class RemoteSearchProvider {
         this.id = appInfo.get_id()!;
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(iconSize: number): St.Icon | null {
         return new St.Icon({
-            icon_size,
+            icon_size: iconSize,
             gicon: this.appInfo.get_icon(),
         });
     }
@@ -273,7 +273,7 @@ export class RemoteSearchProvider {
                 rowStride,
                 hasAlpha,
                 bitsPerSample,
-                nChannels_,
+                _nChannels,
                 data,
             ] = meta['icon-data'];
             gicon = Shell.util_create_pixbuf_from_data(

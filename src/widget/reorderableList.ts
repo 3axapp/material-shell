@@ -233,7 +233,7 @@ export class DropPlaceholder extends St.Widget {
     }
 
     /// Called by gnome's drag-drop system via the _delegate field
-    handleDragOver(source: Clutter.Actor) {
+    handleDragOver(_source: Clutter.Actor) {
         return DND.DragMotionResult.MOVE_DROP;
     }
 
