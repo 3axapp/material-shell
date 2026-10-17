@@ -45,7 +45,9 @@ export class AppSearchProvider {
     }
 
     getResultMetas(apps: string[]) {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         const metas: ResultMeta[] = [];
         for (const id of apps) {
             if (id.endsWith('.desktop')) {
@@ -64,8 +66,8 @@ export class AppSearchProvider {
                 const createIcon = (size: number) =>
                     new St.Icon({
                         icon_name: iconName,
-                        width: size * scale_factor,
-                        height: size * scale_factor,
+                        width: size * scaleFactor,
+                        height: size * scaleFactor,
                         style_class: 'system-action-icon',
                     });
 

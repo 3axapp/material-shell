@@ -38,15 +38,15 @@ export class MatButton extends St.Widget {
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
         const child = params.child;
-        const super_params = params;
-        delete super_params.child;
-        delete super_params.primary;
-        Object.assign(super_params, {
+        const superParams = params;
+        delete superParams.child;
+        delete superParams.primary;
+        Object.assign(superParams, {
             reactive: true,
             track_hover: true,
             clip_to_allocation: true,
         });
-        super(super_params);
+        super(superParams);
         this.set_child(child);
         this.rippleBackground = new RippleBackground(this);
         this.add_child(this.rippleBackground);

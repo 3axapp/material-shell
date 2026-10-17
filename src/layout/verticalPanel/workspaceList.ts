@@ -663,7 +663,7 @@ export class WorkspaceActiveIndicator extends St.Widget {
             style_class: 'workspace-active-indicator',
         });
     }
-    vfunc_get_preferred_height(_for_width: number): [number, number] {
+    vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const height = Me.msThemeManager!.getPanelSize();
         return [height, height];
     }

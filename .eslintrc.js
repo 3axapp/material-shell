@@ -8,10 +8,14 @@ module.exports = {
     extends: ['eslint:recommended', 'plugin:prettier/recommended'],
     plugins: ['@typescript-eslint'],
     rules: {
-        camelcase: [
-            'off',
+        /* Names that come from GObject or GJS (properties, vfunc_*) stay
+         * snake_case, so only our own variables and functions are checked */
+        '@typescript-eslint/naming-convention': [
+            'warn',
             {
-                properties: 'never',
+                selector: ['variable', 'parameter', 'function'],
+                format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+                leadingUnderscore: 'allow',
             },
         ],
         /* Allow unused variables starting with underscores */

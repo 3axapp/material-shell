@@ -19,7 +19,7 @@ import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
 import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
-import { weighted_matching } from 'src/utils/weighted_matching';
+import { weightedMatching } from 'src/utils/weighted_matching';
 
 import { Debug } from 'src/utils/debug';
 
@@ -317,7 +317,7 @@ export class MsWindowManager extends MsManager {
                 costMatrix.push(costs);
             }
 
-            const { cost: _, assignments } = weighted_matching(costMatrix);
+            const { cost: _, assignments } = weightedMatching(costMatrix);
 
             // The meta window to be assigned to each MsWindow
             const msWindowAssignments = new Array<Meta.Window | null>(

@@ -10,7 +10,7 @@ import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
 import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
-import { invalidate_style_recursively } from 'src/utils/styling_utils';
+import { invalidateStyleRecursively } from 'src/utils/styling_utils';
 import { MsManager } from './msManager';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
@@ -131,7 +131,7 @@ export class MsThemeManager extends MsManager {
             // mapped again, and st_widget_map does that on its own.
             for (const msWorkspace of Me.instance.msWorkspaceManager
                 ?.msWorkspaceList ?? []) {
-                invalidate_style_recursively(msWorkspace.msWorkspaceActor);
+                invalidateStyleRecursively(msWorkspace.msWorkspaceActor);
             }
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
@@ -235,8 +235,10 @@ export class MsThemeManager extends MsManager {
     }
 
     getScaledSize(size: number) {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
-        return size * scale_factor;
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
+        return size * scaleFactor;
     }
 
     get focusEffect() {

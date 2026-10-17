@@ -29,10 +29,12 @@ export class MatPanelButton extends MatButton {
      * Just the panel width
      */
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
+            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 
@@ -40,10 +42,12 @@ export class MatPanelButton extends MatButton {
      * Just the panel height
      */
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
+            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 }

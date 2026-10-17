@@ -74,7 +74,7 @@ export class SearchEntryBin extends St.Bin {
     constructor(params = {}) {
         super(params);
     }
-    override vfunc_get_preferred_height(_for_width: number): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const height = Math.max(
             Me.msThemeManager!.getScaledSize(48),
             Me.msThemeManager!.getPanelSize()

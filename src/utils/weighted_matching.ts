@@ -16,7 +16,7 @@ import { assert } from './assert';
  * See https://en.wikipedia.org/wiki/Assignment_problem
  * See https://en.wikipedia.org/wiki/Hungarian_algorithm
  */
-export function weighted_matching(costs: number[][]): {
+export function weightedMatching(costs: number[][]): {
     cost: number;
     assignments: Int32Array;
 } {
@@ -90,9 +90,9 @@ export function weighted_matching(costs: number[][]): {
     return { cost: -v[0], assignments: ans }; // min cost
 }
 
-export function test_hungarian() {
+export function testHungarian() {
     assert(
-        weighted_matching([
+        weightedMatching([
             [10, 20, 30],
             [20, 30, 30],
             [20, 20, 5],
@@ -101,7 +101,7 @@ export function test_hungarian() {
         ''
     );
     assert(
-        weighted_matching([
+        weightedMatching([
             [10, 20, 10000],
             [1, 2, 10000],
             [5, 3, 10000],

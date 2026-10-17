@@ -134,7 +134,7 @@
 | `assert.ts`, `predicates.ts` | `assert`, `assertNotNull`, `isNonNull`. |
 | `weighted_matching.ts` | Венгерский алгоритм. `MsWindowManager` сопоставляет им окна с плитками. |
 | `transition.ts` | `TranslationHelper` — анимация сдвига при переключении столов и окон. |
-| `styling_utils.ts` | `invalidate_style_recursively` — сброс кэша стиля у отсоединённых поддеревьев. |
+| `styling_utils.ts` | `invalidateStyleRecursively` — сброс кэша стиля у отсоединённых поддеревьев. |
 | `shellVersionMatch.ts` | Сравнение версий GNOME: `gnomeVersionNumber`, `compareVersions`. |
 | `windows.ts` | Заголовок окна: показать или скрыть. |
 | `compatibility.ts` | Старые имена клавиш в `Clutter`. |

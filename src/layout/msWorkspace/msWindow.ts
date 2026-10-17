@@ -19,7 +19,7 @@ import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { centerInBox } from 'src/utils/layout';
-import { set_style_class } from 'src/utils/styling_utils';
+import { setStyleClass } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
 
@@ -1106,7 +1106,7 @@ export class MsWindow extends Clutter.Actor {
                 // Most likely a dialog was added before the window was drawn.
                 // If the window eventually gets drawn, the setWindow function will call onMetaWindowsChanged again.
             }
-            set_style_class(
+            setStyleClass(
                 this.msContent,
                 'surface-darker',
                 this.lifecycleState.metaWindow === null ||
@@ -1117,7 +1117,7 @@ export class MsWindow extends Clutter.Actor {
             }
         } else {
             this.reactive = false;
-            set_style_class(this.msContent, 'surface-darker', false);
+            setStyleClass(this.msContent, 'surface-darker', false);
             if (!this.placeholder.get_parent()) {
                 this.msContent.add_child(this.placeholder);
             }

@@ -101,7 +101,7 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea.disable();
     }
 
-    override vfunc_get_preferred_width(_for_height: number): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         const panelSize = Me.msThemeManager!.getPanelSize();
         return [panelSize, panelSize];
     }
@@ -203,7 +203,7 @@ export class MsPanel extends St.BoxLayout {
         }
     }
 
-    override vfunc_get_preferred_width(_for_height: number): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         const panelSize = Me.msThemeManager!.getPanelSize();
         return [panelSize, panelSize];
     }
@@ -303,7 +303,7 @@ export class SearchButton extends MatPanelButton {
     constructor(params = {}) {
         super(params);
     }
-    override vfunc_get_preferred_height(_for_width: number): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const height = Math.max(
             Me.msThemeManager!.getScaledSize(48),
             Me.msThemeManager!.getPanelSize()
