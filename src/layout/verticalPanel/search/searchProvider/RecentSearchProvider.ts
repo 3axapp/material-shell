@@ -370,9 +370,14 @@ class DecisionTree {
             }
         }
 
-        if (bestSplit[0].length == 0 || bestSplit[1].length == 0) return null;
+        if (
+            bestCategory === undefined ||
+            bestSplit[0].length == 0 ||
+            bestSplit[1].length == 0
+        )
+            return null;
         return {
-            split: bestCategory!,
+            split: bestCategory,
             falsy: bestSplit[0],
             truthy: bestSplit[1],
         };

@@ -373,7 +373,7 @@ export class MsWindow extends Clutter.Actor {
             "Expected the MsWindow to be in the 'window' state"
         );
         this.trackAppChanges();
-        state.matchingInfo.appId = this.app.id!;
+        state.matchingInfo.appId = this.app.id;
         this.placeholder.setIcon(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE)
         );

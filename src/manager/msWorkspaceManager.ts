@@ -71,7 +71,9 @@ export class MsWorkspaceManager extends MsManager {
                 const emptyWorkspaces: boolean[] = [];
                 if (!Meta.prefs_get_dynamic_workspaces()) {
                     this._checkWorkspacesId = 0;
-                    const msWorkspaceManager = global.ms.msWorkspaceManager!;
+                    const msWorkspaceManager = assertNotNull(
+                        global.ms.msWorkspaceManager
+                    );
 
                     while (
                         workspaceManager.get_n_workspaces() <
@@ -117,7 +119,9 @@ export class MsWorkspaceManager extends MsManager {
                         emptyWorkspaces[index] = false;
                 }
 
-                const msWindowList = global.ms.msWindowManager!.msWindowList;
+                const msWindowList = assertNotNull(
+                    global.ms.msWindowManager
+                ).msWindowList;
                 for (i = 0; i < msWindowList.length; i++) {
                     const msWindow = msWindowList[i];
 
@@ -126,10 +130,9 @@ export class MsWorkspaceManager extends MsManager {
                         Main.layoutManager.primaryMonitor
                     )
                         continue;
-                    const workspace =
-                        global.ms.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
-                            msWindow.msWorkspace
-                        );
+                    const workspace = assertNotNull(
+                        global.ms.msWorkspaceManager
+                    ).getWorkspaceOfMsWorkspace(msWindow.msWorkspace);
                     assert(workspace !== null, 'Workspace does not exist');
                     emptyWorkspaces[workspace.index()] = false;
                 }
