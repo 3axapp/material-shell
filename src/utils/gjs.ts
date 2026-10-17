@@ -43,13 +43,13 @@ export function registerGObjectClass<
 
 export class WithSignals {
     // Note: these will be replaced by the addSignalMethods function
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function, @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     emit(name: string, ...params: any[]): void {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     connect(name: string, callback: (...params: any[]) => void): number {
         return 0;
     }
-    // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     disconnect(id: number): void {}
 }
 Signals.addSignalMethods(WithSignals.prototype);

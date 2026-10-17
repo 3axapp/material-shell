@@ -503,13 +503,11 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
-    // eslint-disable-next-line camelcase
     override set_position(x: number, y: number) {
         if (this.followMetaWindow) return;
         super.set_position(x, y);
     }
 
-    // eslint-disable-next-line camelcase
     override set_size(width: number, height: number) {
         if (this.followMetaWindow) return;
         super.set_size(width, height);

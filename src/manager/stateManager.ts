@@ -162,6 +162,5 @@ export class StateManager {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     destroy() {}
 }

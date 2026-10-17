@@ -363,7 +363,6 @@ export class MsMain extends St.Widget {
         this.panel.toggle();
     }
 
-    // eslint-disable-next-line camelcase
     add_child(actor: Clutter.Actor) {
         super.add_child(actor);
         this.set_child_above_sibling(this.aboveContainer, null);

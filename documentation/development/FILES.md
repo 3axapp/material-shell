@@ -19,7 +19,7 @@
 | `rollup.config.js`, `rollup.config.prefs.js` | Сборка `build/` в два файла, `dist/extension.js` и `dist/prefs.js`, с разрешением алиаса `src/`. |
 | `tsconfig.json` | `target: es2018`, строгий режим, типы только из `@girs/*` и `@types/`. |
 | `documentation/` | Картинки и письмо для пользователей из основного README. Документация для разработчиков — в `docs/development/`. |
-| `.eslintrc.js`, `.prettierrc`, `.editorconfig` | Стиль кода: четыре пробела в коде, два — в документации. |
+| `eslint.config.mjs`, `.prettierrc`, `.editorconfig` | Стиль кода: четыре пробела в коде, два — в документации. |
 
 Генерируется и в git не попадает:
 
