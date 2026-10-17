@@ -1,6 +1,18 @@
 import GObject from 'gi://GObject';
 const Signals = imports.signals;
 
+/// Type of the `static metaInfo` field read by `registerGObjectClass`.
+export type MetaInfo = GObject.MetaInfo<
+    { [key: string]: GObject.ParamSpec },
+    { $gtype: GObject.GType }[],
+    {
+        [key: string]: {
+            param_types?: readonly GObject.GTypeInput[];
+            [key: string]: unknown;
+        };
+    }
+>;
+
 /// Decorator function to call `GObject.registerClass` with the given class.
 /// Use like
 /// ```
@@ -11,7 +23,7 @@ export function registerGObjectClass<
     K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends {
-        metaInfo?: GObject.MetaInfo<any, any, any>;
+        metaInfo?: MetaInfo;
         new (...params: any[]): K;
     }
 >(target: T) {

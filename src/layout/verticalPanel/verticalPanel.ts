@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
-import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
@@ -13,7 +12,7 @@ import {
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
 import { assert } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { SignalObserver } from 'src/utils/signal';
 import { MatDivider } from 'src/widget/material/divider';
 import { ExtendedPanelContent } from './extendedPanelContent';
@@ -24,7 +23,7 @@ import { Debug } from 'src/utils/debug';
 
 @registerGObjectClass
 export class PanelContent extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'PanelContent',
         Signals: {
             toggle: {
@@ -126,7 +125,7 @@ export class PanelContent extends St.BoxLayout {
 
 @registerGObjectClass
 export class MsPanel extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsPanel',
     };
     gnomeShellPanel: Panel.Panel;

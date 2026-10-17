@@ -1,6 +1,5 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import GnomeDesktop from 'gi://GnomeDesktop';
 import Shell from 'gi://Shell';
@@ -12,7 +11,7 @@ import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { getExtensionSettings } from 'src/utils/extension_utils';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 
 /** Extension imports */
@@ -20,7 +19,7 @@ import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsStatusArea',
     };
     gnomeShellPanel: Panel.Panel;
@@ -374,7 +373,7 @@ export class MsStatusArea extends Clutter.Actor {
 
 @registerGObjectClass
 export class MsDateMenuBox extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsDateMenuBox',
     };
     dateMenu: DateMenu.DateMenuButton;

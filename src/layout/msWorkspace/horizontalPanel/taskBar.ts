@@ -10,7 +10,7 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { diffLists } from 'src/utils/diff_list';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
 import { MatButton } from 'src/widget/material/button';
@@ -270,7 +270,7 @@ export class TaskBar extends St.Widget {
 
 @registerGObjectClass
 export class TaskActiveIndicator extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskActiveIndicator',
     };
 
@@ -308,7 +308,7 @@ export class TaskActiveIndicator extends St.Widget {
 
 @registerGObjectClass
 export class TaskBarItem extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskBarItem',
         Signals: {
             'drag-dropped': {},
@@ -378,7 +378,7 @@ export class TaskBarItem extends MatButton {
 
 @registerGObjectClass
 export class TileableItem extends TaskBarItem {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TileableItem',
         Signals: {
             'close-clicked': {},

@@ -3,13 +3,12 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 import { throttle } from 'src/utils';
 import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
 import { ProviderResultList } from './search/ProviderResultList';
@@ -40,7 +39,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'SearchResultList',
         Signals: {
             'result-selected-changed': {

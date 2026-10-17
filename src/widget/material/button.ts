@@ -2,7 +2,7 @@
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 
 /** Extension imports */
@@ -14,7 +14,7 @@ interface MatButtonParams extends Partial<St.Widget.ConstructorProps> {
 
 @registerGObjectClass
 export class MatButton extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatButton',
         Signals: {
             clicked: {

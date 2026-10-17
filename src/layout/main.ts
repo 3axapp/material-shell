@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
-import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -13,7 +12,7 @@ import {
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
 import { TranslationHelper } from 'src/utils/transition';
@@ -27,7 +26,7 @@ import { Monitor } from 'src/utils/shellTypes';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsMain',
     };
     panelsVisible: boolean;
@@ -386,7 +385,7 @@ export class MsMain extends St.Widget {
 
 @registerGObjectClass
 export class MonitorContainer extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MonitorContainer',
     };
     bgGroup: Meta.BackgroundGroup;
@@ -533,7 +532,7 @@ export class MonitorContainer extends St.Widget {
 
 @registerGObjectClass
 export class PrimaryMonitorContainer extends MonitorContainer {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'PrimaryMonitorContainer',
     };
     panel: MsPanel;

@@ -12,7 +12,7 @@ import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
 import { MsWorkspace } from '../msWorkspace/msWorkspace';
@@ -202,7 +202,7 @@ interface StyleMenu {
 }
 @registerGObjectClass
 export class WorkspaceButton extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'WorkspaceButton',
         Signals: {
             'drag-dropped': {},
@@ -484,7 +484,7 @@ function isMsWindow(argument: any): argument is MsWindow {
 
 @registerGObjectClass
 export class WorkspaceButtonIcon extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'WorkspaceButtonIcon',
     };
 

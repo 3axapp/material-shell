@@ -1,12 +1,11 @@
 import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 
 @registerGObjectClass
 export class SearchResultEntry extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'SearchResultEntry',
         Signals: {
             activate: {

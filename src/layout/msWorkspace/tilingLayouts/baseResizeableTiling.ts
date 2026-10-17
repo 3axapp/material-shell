@@ -11,7 +11,7 @@ import { Portion, PortionBorder } from 'src/layout/msWorkspace/portion';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { FocusEffectEnum } from 'src/manager/msThemeManager';
 import { assert } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
@@ -396,7 +396,7 @@ export class BaseResizeableTilingLayout<
 
 @registerGObjectClass
 export class ResizableBorderActor extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'ResizableBorderActor',
         Signals: {
             'drag-start': {},
@@ -439,7 +439,7 @@ export class ResizableBorderActor extends St.Widget {
 
 @registerGObjectClass
 export class PrimaryBorderEffect extends Clutter.Effect {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'PrimaryBorderEffect',
         Properties: {
             opacity: GObject.ParamSpec.float(

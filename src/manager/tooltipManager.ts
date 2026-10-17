@@ -1,12 +1,11 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 
 export class TooltipManager extends MsManager {
     constructor() {
@@ -98,7 +97,7 @@ interface MatTooltipParams {
 
 @registerGObjectClass
 export class MatTooltip extends St.Label {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatTooltip',
     };
     params: MatTooltipParams;

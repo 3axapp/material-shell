@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
@@ -11,7 +10,7 @@ import {
     TilingLayoutByKey,
 } from 'src/manager/layoutManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
@@ -23,7 +22,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class LayoutSwitcher extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'LayoutSwitcher',
     };
     layoutQuickWidgetBin: St.Bin;

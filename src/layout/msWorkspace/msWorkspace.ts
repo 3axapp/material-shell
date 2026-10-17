@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
@@ -11,7 +10,7 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
-import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
@@ -663,7 +662,7 @@ export class MsWorkspace extends WithSignals {
 
 @registerGObjectClass
 export class MsWorkspaceActor extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsWorkspaceActor',
     };
     tileableContainer: Clutter.Actor;

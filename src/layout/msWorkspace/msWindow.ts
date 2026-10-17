@@ -17,7 +17,7 @@ import { Async } from 'src/utils/async';
 import St from 'gi://St';
 import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { centerInBox } from 'src/utils/layout';
 import { setStyleClass } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
@@ -144,7 +144,7 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
 
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsWindow',
         Signals: {
             title_changed: {
@@ -1347,7 +1347,7 @@ export class MsWindowContent extends St.Widget {
     placeholder: Clutter.Actor;
     clone: Clutter.Clone;
 
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsWindowContent',
     };
 

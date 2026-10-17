@@ -1,6 +1,5 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
 import GnomeDesktop from 'gi://GnomeDesktop';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -8,7 +7,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { AppsManager } from 'src/manager/appsManager';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
 
@@ -21,7 +20,7 @@ import { default as Me } from 'src/extension';
 const BUTTON_SIZE = 124;
 @registerGObjectClass
 export class MsApplicationLauncher extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsApplicationLauncher',
         CssName: 'MsApplicationLauncher',
     };
@@ -666,7 +665,7 @@ export class MsApplicationButtonContainer extends St.Widget {
 
 @registerGObjectClass
 export class MsApplicationButton extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsApplicationButton',
     };
 
