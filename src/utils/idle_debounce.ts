@@ -2,7 +2,7 @@ import GLib from 'gi://GLib';
 import { assertNotNull } from './assert';
 
 /** Helper to run a function with `GLib.idle_add`, but with automatic debouncing and a convenient cancel function */
-export class IdleDebounce<P extends any[]> {
+export class IdleDebounce<P extends unknown[]> {
     private scheduleInfo: {
         signal: number;
         args: P;

@@ -24,16 +24,16 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 import { default as Me } from 'src/extension';
 import { Monitor } from 'src/utils/shellTypes';
 
-const isTileableItem = (obj: any): obj is TileableItem => {
+const isTileableItem = (obj: unknown): obj is TileableItem => {
     return obj instanceof TileableItem;
 };
 
-const isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
+const isIconTaskBarItem = (obj: unknown): obj is IconTaskBarItem => {
     return obj instanceof IconTaskBarItem;
 };
 
 const isTileableItemOrIconTaskBarItem = (
-    obj: any
+    obj: unknown
 ): obj is TileableItem | IconTaskBarItem => {
     return isTileableItem(obj) || isIconTaskBarItem(obj);
 };
@@ -274,7 +274,7 @@ export class TaskActiveIndicator extends St.Widget {
         GTypeName: 'TaskActiveIndicator',
     };
 
-    constructor(...args: any[]) {
+    constructor(...args: ConstructorParameters<typeof St.Widget>) {
         super(...args);
     }
 

@@ -31,7 +31,7 @@ export class AppPlaceholder extends St.Widget {
     callToAction: St.Label;
     spinnerContainer: Clutter.Actor;
     vertical = true;
-    private _spinner: any;
+    private _spinner?: Animation.Spinner;
 
     constructor(icon: Clutter.Actor, textLabel: string) {
         super({

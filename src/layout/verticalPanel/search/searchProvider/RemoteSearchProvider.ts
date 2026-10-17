@@ -305,10 +305,10 @@ export class RemoteSearchProvider {
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetInitialResultSetRemote(
                           terms,
-                          (results: any[], error: string) => {
+                          (results: [string[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -317,8 +317,13 @@ export class RemoteSearchProvider {
                   })
                 : this.proxy.GetInitialResultSetAsync(terms, cancellable));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
@@ -333,11 +338,11 @@ export class RemoteSearchProvider {
     ) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetSubsearchResultSetRemote(
                           previousResults,
                           newTerms,
-                          (results: any[], error: string) => {
+                          (results: [string[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -350,8 +355,13 @@ export class RemoteSearchProvider {
                       cancellable
                   ));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
@@ -363,10 +373,10 @@ export class RemoteSearchProvider {
         let metas: RawMeta[];
         try {
             [metas] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[RawMeta[]]>((resolve, reject) => {
                       this.proxy.GetResultMetasRemote(
                           ids,
-                          (results: any[], error: string) => {
+                          (results: [RawMeta[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -374,8 +384,13 @@ export class RemoteSearchProvider {
                       );
                   })
                 : this.proxy.GetResultMetasAsync(ids, cancellable));
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id} during GetResultMetas: ${error}`
                 );

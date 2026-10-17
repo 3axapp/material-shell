@@ -96,7 +96,7 @@ export class StateManager {
     getState(key: string) {
         return this.state[key];
     }
-    setState(key: string, value: any) {
+    setState(key: string, value: unknown) {
         if (value === undefined) {
             delete this.state[key];
         } else {

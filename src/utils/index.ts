@@ -10,7 +10,7 @@ import { Async } from './async';
 import { default as Me } from 'src/extension';
 
 /* exported range, debounce, throttle, reparentActor */
-export const range = (to: any) =>
+export const range = (to: number) =>
     // Returns a list containing all integers from 0 to `to`
     Array(to)
         .fill(0)
@@ -46,7 +46,7 @@ interface TrottleParams {
 // as much as it can, without ever going more than once per `wait` duration;
 // but if you'd like to disable the execution on the leading edge, pass
 // `{leading: false}`. To disable execution on the trailing edge, ditto.
-export function throttle<T extends any[], R, C>(
+export function throttle<T extends unknown[], R, C>(
     this: C,
     func: (...args: T) => R,
     wait: number,

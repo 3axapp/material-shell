@@ -10,21 +10,27 @@ import { MatButton } from 'src/widget/material/button';
 
 /** Extension imports */
 
+/** dnd.d.ts lags behind the shell: it lacks these fields of _Draggable */
+type Draggable = ReturnType<typeof DND.makeDraggable> & {
+    _dragActor: Clutter.Actor;
+    startGesture: Clutter.Gesture;
+};
+
 interface DraggableActor extends Clutter.Actor {
-    draggable: any;
-    _draggable: any;
+    draggable?: boolean;
+    _draggable: Draggable;
     originalHandleDragOver?: (
         source: DraggableActor,
         actor: Clutter.Actor,
         x: number,
         y: number
-    ) => any;
+    ) => DND.DragMotionResult;
     handleDragOver?: (
         source: DraggableActor,
         actor: Clutter.Actor,
         x: number,
         y: number
-    ) => any;
+    ) => DND.DragMotionResult;
     originalAcceptDrop: (source: DraggableActor) => boolean;
     acceptDrop: (source: DraggableActor) => boolean;
 }
@@ -48,10 +54,13 @@ export class ReorderableList extends Clutter.Actor {
     placeHolder: DropPlaceholder;
     draggedActor: DraggableActor | null | undefined;
     vertical: boolean;
-    classAccepted: any[];
+    classAccepted: (abstract new (...args: never[]) => unknown)[];
     dragInProgress: boolean;
 
-    constructor(vertical = false, classAccepted: any[] = []) {
+    constructor(
+        vertical = false,
+        classAccepted: (abstract new (...args: never[]) => unknown)[] = []
+    ) {
         super({
             layout_manager: new Clutter.BoxLayout({
                 orientation: vertical
@@ -109,8 +118,9 @@ export class ReorderableList extends Clutter.Actor {
         };
 
         actor.acceptDrop = (source) => {
-            if (source._draggable._dragActor.get_parent()) {
-                source._draggable._dragActor.get_parent().remove_child(source);
+            const dragParent = source._draggable._dragActor.get_parent();
+            if (dragParent) {
+                dragParent.remove_child(source);
             }
             if (source === this.draggedActor || source === this.foreignActor) {
                 return true;
@@ -123,7 +133,7 @@ export class ReorderableList extends Clutter.Actor {
 
         actor._draggable = DND.makeDraggable(actor, {
             restoreOnSuccess: false,
-        });
+        }) as Draggable;
 
         if (actor instanceof MatButton) {
             // A drag and a long press start from the same press, so keep the

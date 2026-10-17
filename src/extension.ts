@@ -80,10 +80,10 @@ export default class MaterialShellExtension
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     disableInProgress: boolean | undefined;
-    emit(_name: string, ..._params: any[]): void {
+    emit(_name: string, ..._params: unknown[]): void {
         throw new Error('Method not implemented.');
     }
-    connect(_name: string, _callback: (...params: any[]) => void): number {
+    connect(_name: string, _callback: (...params: never[]) => void): number {
         throw new Error('Method not implemented.');
     }
     disconnect(_id: number): void {

@@ -21,9 +21,10 @@ export type MetaInfo = GObject.MetaInfo<
 /// ```
 export function registerGObjectClass<
     K,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends {
         metaInfo?: MetaInfo;
+        // GObject.registerClass requires `new (...args: any[]) => K`
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         new (...params: any[]): K;
     }
 >(target: T) {

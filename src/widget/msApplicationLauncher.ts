@@ -672,7 +672,7 @@ export class MsApplicationButton extends MatButton {
     app: Shell.App;
     buttonSize: number;
     layout: St.BoxLayout;
-    icon: any;
+    icon: Clutter.Actor | undefined;
     title: St.Label | undefined;
     constructor({ app, buttonSize }: { app: Shell.App; buttonSize: number }) {
         super({});

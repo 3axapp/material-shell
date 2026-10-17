@@ -223,7 +223,7 @@ export class WorkspaceButton extends MatButton {
         originalCoords: null;
         originalSequence: null;
     };
-    _draggable: any;
+    _draggable: ReturnType<typeof DND.makeDraggable> | undefined;
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
@@ -435,14 +435,19 @@ export class WorkspaceButton extends MatButton {
         });
     }
 
-    handleDragOver(source: any, _actor: Clutter.Actor, _x: number, _y: number) {
+    handleDragOver(
+        source: unknown,
+        _actor: Clutter.Actor,
+        _x: number,
+        _y: number
+    ) {
         if (source instanceof TaskBarItem) {
             return DND.DragMotionResult.MOVE_DROP;
         }
         return DND.DragMotionResult.NO_DROP;
     }
 
-    acceptDrop(source: any) {
+    acceptDrop(source: unknown) {
         if (source instanceof TaskBarItem) {
             if (source.tileable instanceof MsWindow) {
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
@@ -478,7 +483,7 @@ export class WorkspaceButton extends MatButton {
     }
 }
 
-function isMsWindow(argument: any): argument is MsWindow {
+function isMsWindow(argument: unknown): argument is MsWindow {
     return argument instanceof MsWindow;
 }
 

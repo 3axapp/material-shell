@@ -3,7 +3,7 @@ import Clutter from 'gi://Clutter';
 
 /* exported polyfillClutter, SetAllocation, Allocate, AllocatePreferredSize */
 export function polyfillClutter() {
-    const OldClutter = Clutter as any;
+    const OldClutter = Clutter as unknown as Record<string, unknown>;
     if (!Object.hasOwnProperty.call(OldClutter, 'KEY_Down'))
         OldClutter.KEY_Down = OldClutter.Down;
     if (!Object.hasOwnProperty.call(OldClutter, 'KEY_Right'))

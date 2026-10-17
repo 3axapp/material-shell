@@ -31,7 +31,7 @@ interface MsWorkspaceManagerState {
 export class MsWorkspaceManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
     private _state: MsWorkspaceManagerState;
-    windowTracker: any;
+    windowTracker: Shell.WindowTracker;
     msWorkspaceList: MsWorkspace[];
     settings: Gio.Settings;
     metaWindowFocused: Meta.Window | null;
@@ -39,8 +39,8 @@ export class MsWorkspaceManager extends MsManager {
     primaryIndex: number;
     workspaceTracker: WindowManager.WorkspaceTracker;
     private _updatingMonitors: boolean | undefined;
-    restoringState: any;
-    stateChangedTriggered: any;
+    restoringState?: boolean;
+    stateChangedTriggered?: boolean;
 
     constructor(state = {}) {
         super();
@@ -443,7 +443,7 @@ export class MsWorkspaceManager extends MsManager {
 
                     // Try to find an unused monitor;
                     const availableMonitor = Main.layoutManager.monitors.find(
-                        (monitor: any) => {
+                        (monitor) => {
                             return (
                                 monitor != Main.layoutManager.primaryMonitor &&
                                 !this.msWorkspaceList.find((msWorkspace) => {
