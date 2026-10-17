@@ -383,6 +383,15 @@ export class MsMain extends St.Widget {
     }
 }
 
+/**
+ * background.d.ts types `backgroundActor` as always set, but
+ * watchBackgroundActor clears it once the actor has been destroyed.
+ */
+type BackgroundManager = Omit<
+    Background.BackgroundManager,
+    'backgroundActor'
+> & { backgroundActor: Meta.BackgroundActor | null };
+
 @registerGObjectClass
 export class MonitorContainer extends St.Widget {
     static metaInfo: MetaInfo = {
@@ -390,7 +399,7 @@ export class MonitorContainer extends St.Widget {
     };
     bgGroup: Meta.BackgroundGroup;
     horizontalPanelSpacer: St.Widget;
-    bgManager: any;
+    bgManager?: BackgroundManager | null;
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
     monitor!: Monitor;
@@ -437,7 +446,8 @@ export class MonitorContainer extends St.Widget {
     }
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
-        this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
+        assertNotNull(assertNotNull(this.bgManager).backgroundActor).visible =
+            !monitorIsFullscreen;
         this.horizontalPanelSpacer.visible =
             this.layout.panelsVisible && !monitorIsFullscreen;
     }
@@ -475,7 +485,8 @@ export class MonitorContainer extends St.Widget {
      */
     watchBackgroundActor() {
         const bgManager = this.bgManager;
-        const actor = bgManager?.backgroundActor;
+        if (!bgManager) return;
+        const actor = bgManager.backgroundActor;
         if (!actor) return;
         actor.connect('destroy', () => {
             if (bgManager.backgroundActor === actor) {

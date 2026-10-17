@@ -378,7 +378,7 @@ export class MsDateMenuBox extends St.Widget {
     };
     dateMenu: DateMenu.DateMenuButton;
     indicatorActor: DateMenu.MessagesIndicator;
-    private _wallClock: any;
+    private _wallClock?: GnomeDesktop.WallClock;
     clockLabel: St.Label;
     notificationIcon: St.Icon;
     notificationIconRing: St.Icon;
@@ -462,7 +462,7 @@ export class MsDateMenuBox extends St.Widget {
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(clockHorizontalSignal);
             this.indicatorActor.disconnect(this.indicatorSignal);
-            this._wallClock.disconnect(this.dateMenuSignal);
+            assertNotNull(this._wallClock).disconnect(this.dateMenuSignal);
             delete this._wallClock;
         });
     }
@@ -474,8 +474,8 @@ export class MsDateMenuBox extends St.Widget {
          *
          * Deliberately separates HH:MM into distinct sections
          */
-        const clockSections: string[] = this._wallClock.clock
-            .replace(/∶/g, ' ')
+        const clockSections: string[] = assertNotNull(this._wallClock)
+            .clock.replace(/∶/g, ' ')
             .split(' ');
         if (!clockSections[0]) clockSections.shift();
         const markup = clockSections

@@ -7,6 +7,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { AppsManager } from 'src/manager/appsManager';
+import { assertNotNull } from 'src/utils/assert';
 import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
@@ -154,8 +155,8 @@ export class MsApplicationButtonContainer extends St.Widget {
     clockLabel: St.Label | undefined;
     dateLabel: St.Label | undefined;
     clockBin: St.BoxLayout | undefined;
-    private _wallClock: any;
-    signalClock: any;
+    private _wallClock?: GnomeDesktop.WallClock;
+    signalClock: number | undefined;
     inputLayout: St.BoxLayout;
     searchIcon: St.Icon;
     inputContainer: St.Entry;
@@ -205,7 +206,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             });
             const updateClock = () => {
                 if (clockLabel.mapped) {
-                    clockLabel.text = this._wallClock.clock;
+                    clockLabel.text = assertNotNull(this._wallClock).clock;
                     const date = new Date();
                     const dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
@@ -218,10 +219,11 @@ export class MsApplicationButtonContainer extends St.Widget {
                 }
             };
 
-            this.signalClock = this._wallClock.connect(
+            const signalClock = this._wallClock.connect(
                 'notify::clock',
                 updateClock
             );
+            this.signalClock = signalClock;
 
             // There was a bug when updating the clock while the clock was not in the stage which didn't update the time correct
             clockLabel.connect('notify::mapped', () => {
@@ -231,7 +233,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                 }
             });
             clockLabel.connect('destroy', () => {
-                this._wallClock.disconnect(this.signalClock);
+                assertNotNull(this._wallClock).disconnect(signalClock);
                 delete this._wallClock;
             });
             this.add_child(this.clockBin);
