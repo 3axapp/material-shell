@@ -1,13 +1,12 @@
 /** Gnome libs imports */
-import GObject from 'gi://GObject';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 
 @registerGObjectClass
 export class MatDivider extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatDivider',
     };
 

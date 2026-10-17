@@ -46,14 +46,14 @@ export class MsDndManager extends MsManager {
             () => {
                 if (this.dragInProgress !== null) {
                     const newMsWorkspace =
-                        Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
+                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                     if (this.dragInProgress.msWindow.metaWindow) {
                         this.dragInProgress.msWindow.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
                             true
                         );
                     } else {
-                        Me.msWorkspaceManager!.setWindowToMsWorkspace(
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
                             this.dragInProgress.msWindow,
                             newMsWorkspace
                         );
@@ -156,12 +156,12 @@ export class MsDndManager extends MsManager {
         this.dragInProgress = {
             msWindow,
             originPointerAnchor: [
-                relativeX! / msWindow.width,
-                relativeY! / msWindow.height,
+                relativeX / msWindow.width,
+                relativeY / msWindow.height,
             ],
             originalParent,
         };
-        Me.layout!.setActorAbove(msWindow);
+        Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
             Math.round(
@@ -174,7 +174,7 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        Me.msThemeManager!.setCursor(Clutter.CursorType.GRABBING);
+        Me.msThemeManager.setCursor(Clutter.CursorType.GRABBING);
     }
 
     endDrag() {
@@ -189,7 +189,7 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
+        Me.msThemeManager.setCursor(Clutter.CursorType.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {
@@ -215,15 +215,15 @@ export class MsDndManager extends MsManager {
             let newMsWorkspace: MsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
                 newMsWorkspace =
-                    Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             } else {
                 newMsWorkspace =
-                    Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
+                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                         monitor.index
                     )[0];
             }
 
-            Me.msWorkspaceManager!.setWindowToMsWorkspace(
+            Me.msWorkspaceManager.setWindowToMsWorkspace(
                 msWindowDragged,
                 newMsWorkspace
             );
@@ -279,34 +279,33 @@ export class InputGrabber extends Clutter.Actor {
             keyEvent.get_key_code(),
             keyEvent.get_state()
         );
-        if (Me.hotKeysModule!.actionIdToNameMap.has(actionId)) {
-            const actionName =
-                Me.hotKeysModule!.actionIdToNameMap.get(actionId);
+        if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
+            const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
                     assertNotNull(
-                        Me.hotKeysModule!.actionNameToActionMap.get(
+                        Me.hotKeysModule.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_LEFT
                         )
                     )();
                     break;
                 case KeyBindingAction.NEXT_WINDOW:
                     assertNotNull(
-                        Me.hotKeysModule!.actionNameToActionMap.get(
+                        Me.hotKeysModule.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_RIGHT
                         )
                     )();
                     break;
                 case KeyBindingAction.PREVIOUS_WORKSPACE:
                     assertNotNull(
-                        Me.hotKeysModule!.actionNameToActionMap.get(
+                        Me.hotKeysModule.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_TOP
                         )
                     )();
                     break;
                 case KeyBindingAction.NEXT_WORKSPACE:
                     assertNotNull(
-                        Me.hotKeysModule!.actionNameToActionMap.get(
+                        Me.hotKeysModule.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_BOTTOM
                         )
                     )();

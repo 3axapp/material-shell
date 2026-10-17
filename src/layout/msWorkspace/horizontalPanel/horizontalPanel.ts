@@ -9,6 +9,7 @@ import {
     HorizontalPanelPositionEnum,
     msThemeSignalEnum,
 } from 'src/manager/msThemeManager';
+import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalObserver } from 'src/utils/signal';
 import { MsWorkspace } from '../msWorkspace';
@@ -24,7 +25,7 @@ export class HorizontalPanel extends St.BoxLayout {
     layoutSwitcher: LayoutSwitcher;
     clockLabel: St.Label | undefined;
     clockBin: St.BoxLayout | null | undefined;
-    private _wallClock: any;
+    private _wallClock?: GnomeDesktop.WallClock;
     msWorkspace: MsWorkspace;
     signalObserver = new SignalObserver();
     constructor(msWorkspace: MsWorkspace) {
@@ -34,7 +35,7 @@ export class HorizontalPanel extends St.BoxLayout {
         this._delegate = this;
         this.updateStyle();
         this.signalObserver.observe(
-            Me.msThemeManager!,
+            Me.msThemeManager,
             msThemeSignalEnum.HorizontalPanelPositionChanged,
             this.updateStyle.bind(this)
         );
@@ -46,10 +47,10 @@ export class HorizontalPanel extends St.BoxLayout {
         this.add_child(this.taskBar);
         this.add_child(this.layoutSwitcher);
         this.signalObserver.observe(
-            Me.msThemeManager!,
+            Me.msThemeManager,
             msThemeSignalEnum.ClockHorizontalChanged,
             () => {
-                if (Me.msThemeManager!.clockHorizontal) {
+                if (Me.msThemeManager.clockHorizontal) {
                     this.createClock();
                 } else {
                     this.removeClock();
@@ -60,7 +61,7 @@ export class HorizontalPanel extends St.BoxLayout {
             this.signalObserver.clear();
         });
 
-        if (Me.msThemeManager!.clockHorizontal) {
+        if (Me.msThemeManager.clockHorizontal) {
             this.createClock();
         }
     }
@@ -77,7 +78,7 @@ export class HorizontalPanel extends St.BoxLayout {
         this.clockBin.add_child(clockLabel);
         this._wallClock = new GnomeDesktop.WallClock();
         const updateClock = () => {
-            clockLabel.text = this._wallClock.clock;
+            clockLabel.text = assertNotNull(this._wallClock).clock;
         };
         const signalClock = this._wallClock.connect(
             'notify::clock',
@@ -92,7 +93,7 @@ export class HorizontalPanel extends St.BoxLayout {
         });
         this.insert_child_at_index(this.clockBin, 1);
         clockLabel.connect('destroy', () => {
-            this._wallClock.disconnect(signalClock);
+            assertNotNull(this._wallClock).disconnect(signalClock);
             delete this._wallClock;
         });
     }
@@ -100,7 +101,7 @@ export class HorizontalPanel extends St.BoxLayout {
     updateStyle() {
         this.remove_style_class_name('position-top');
         this.remove_style_class_name('position-bottom');
-        switch (Me.msThemeManager!.horizontalPanelPosition) {
+        switch (Me.msThemeManager.horizontalPanelPosition) {
             case HorizontalPanelPositionEnum.TOP: {
                 this.add_style_class_name('position-top');
                 break;
@@ -119,7 +120,7 @@ export class HorizontalPanel extends St.BoxLayout {
     }
 
     vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager!.getPanelSize();
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 

@@ -92,7 +92,7 @@ export class RippleBackground extends St.Widget {
                         ...event.get_coords()
                     );
                     if (success) {
-                        this.createRippleWave(x!, y!);
+                        this.createRippleWave(x, y);
                     }
                 } else if (
                     [

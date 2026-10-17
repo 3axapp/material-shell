@@ -88,7 +88,7 @@ export function loadRemoteSearchProviders(
 
         try {
             keyfile.load_from_file(path as string, 0);
-        } catch (e) {
+        } catch (_e) {
             return;
         }
 
@@ -100,14 +100,14 @@ export function loadRemoteSearchProviders(
             const busName = keyfile.get_string(group, 'BusName');
             const objectPath = keyfile.get_string(group, 'ObjectPath');
 
-            if (objectPaths[objectPath!]) return;
+            if (objectPaths[objectPath]) return;
 
             let appInfo = null;
             try {
                 const desktopId = keyfile.get_string(group, 'DesktopId');
                 appInfo = GioUnix.DesktopAppInfo.new(desktopId);
                 if (!appInfo.should_show()) return;
-            } catch (e) {
+            } catch (_e) {
                 log(`Ignoring search provider ${path}: missing DesktopId`);
                 return;
             }
@@ -115,29 +115,29 @@ export function loadRemoteSearchProviders(
             let autoStart = true;
             try {
                 autoStart = keyfile.get_boolean(group, 'AutoStart');
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
             let version = '1';
             try {
-                version = keyfile.get_string(group, 'Version')!;
-            } catch (e) {
+                version = keyfile.get_string(group, 'Version') ?? version;
+            } catch (_e) {
                 // ignore error
             }
 
             if (parseInt(version) >= 2)
                 remoteProvider = new RemoteSearchProvider2(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
             else
                 remoteProvider = new RemoteSearchProvider(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
 
@@ -147,11 +147,11 @@ export function loadRemoteSearchProviders(
                     group,
                     'DefaultDisabled'
                 );
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
-            objectPaths[objectPath!] = remoteProvider;
+            objectPaths[objectPath] = remoteProvider;
             loadedProviders.push(remoteProvider);
         } catch (e) {
             log(`Failed to add search provider ${path}: ${e}`);
@@ -176,15 +176,15 @@ export function loadRemoteSearchProviders(
     const enabled = searchSettings.get_strv('enabled');
 
     loadedProviders = loadedProviders.filter((provider) => {
-        const appId = provider.appInfo.get_id()!;
+        const appId = provider.id;
 
         if (provider.defaultEnabled) return !disabled.includes(appId);
         else return enabled.includes(appId);
     });
 
     loadedProviders.sort((providerA, providerB) => {
-        const appIdA = providerA.appInfo.get_id()!;
-        const appIdB = providerB.appInfo.get_id()!;
+        const appIdA = providerA.id;
+        const appIdB = providerB.id;
 
         const idxA = sortOrder.indexOf(appIdA);
         const idxB = sortOrder.indexOf(appIdB);
@@ -220,7 +220,7 @@ export class RemoteSearchProvider {
     searchInProgress = false;
 
     get title(): string {
-        return this.appInfo.get_name()!;
+        return this.appInfo.get_name();
     }
 
     constructor(
@@ -248,12 +248,12 @@ export class RemoteSearchProvider {
         this.proxy.init_async(GLib.PRIORITY_DEFAULT, null);
 
         this.appInfo = appInfo;
-        this.id = appInfo.get_id()!;
+        this.id = assertNotNull(appInfo.get_id());
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(iconSize: number): St.Icon | null {
         return new St.Icon({
-            icon_size,
+            icon_size: iconSize,
             gicon: this.appInfo.get_icon(),
         });
     }
@@ -273,7 +273,7 @@ export class RemoteSearchProvider {
                 rowStride,
                 hasAlpha,
                 bitsPerSample,
-                nChannels_,
+                _nChannels,
                 data,
             ] = meta['icon-data'];
             gicon = Shell.util_create_pixbuf_from_data(
@@ -305,10 +305,10 @@ export class RemoteSearchProvider {
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetInitialResultSetRemote(
                           terms,
-                          (results: any[], error: string) => {
+                          (results: [string[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -317,8 +317,13 @@ export class RemoteSearchProvider {
                   })
                 : this.proxy.GetInitialResultSetAsync(terms, cancellable));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
@@ -333,11 +338,11 @@ export class RemoteSearchProvider {
     ) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetSubsearchResultSetRemote(
                           previousResults,
                           newTerms,
-                          (results: any[], error: string) => {
+                          (results: [string[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -350,8 +355,13 @@ export class RemoteSearchProvider {
                       cancellable
                   ));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
@@ -363,10 +373,10 @@ export class RemoteSearchProvider {
         let metas: RawMeta[];
         try {
             [metas] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[RawMeta[]]>((resolve, reject) => {
                       this.proxy.GetResultMetasRemote(
                           ids,
-                          (results: any[], error: string) => {
+                          (results: [RawMeta[]], error: string) => {
                               if (error) reject(error);
                               else resolve(results);
                           },
@@ -374,8 +384,13 @@ export class RemoteSearchProvider {
                       );
                   })
                 : this.proxy.GetResultMetasAsync(ids, cancellable));
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            )
                 log(
                     `Received error from D-Bus search provider ${this.id} during GetResultMetas: ${error}`
                 );
@@ -421,7 +436,7 @@ export class RemoteSearchProvider {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
         mslog(
-            `Search provider ${this.appInfo.get_id()!} does not implement LaunchSearch`
+            `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
     }

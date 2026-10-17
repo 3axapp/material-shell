@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
@@ -11,7 +10,7 @@ import {
     TilingLayoutByKey,
 } from 'src/manager/layoutManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
@@ -23,7 +22,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class LayoutSwitcher extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'LayoutSwitcher',
     };
     layoutQuickWidgetBin: St.Bin;
@@ -137,11 +136,11 @@ export class LayoutSwitcher extends St.BoxLayout {
             return true;
 
         // Add the layout in the right order
-        const wantedIndex = Me.layoutManager!.layoutList.findIndex((layout) => {
+        const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
             return layoutKey === layout.state.key;
         });
         // Note: This cast is safe, typescript is just not good enough to figure that out
-        const newState = Me.layoutManager!.getLayoutByKey(layoutKey)
+        const newState = Me.layoutManager.getLayoutByKey(layoutKey)
             .state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
@@ -152,7 +151,7 @@ export class LayoutSwitcher extends St.BoxLayout {
                 newState
             );
         }
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
         return true;
     }
 
@@ -168,13 +167,13 @@ export class LayoutSwitcher extends St.BoxLayout {
             (layoutState) => layoutState.key === layoutKey
         );
         this.msWorkspace.state.layoutStateList.splice(index, 1);
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
 
         return true;
     }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
-        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {

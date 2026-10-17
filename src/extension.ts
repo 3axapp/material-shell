@@ -46,6 +46,9 @@ export default class MaterialShellExtension
         ) as MaterialShellExtension;
     }
 
+    /* The managers are created in enable(); these getters assume the caller
+     * runs after that */
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     static get stateManager() {
         return this.instance.stateManager!;
     }
@@ -74,15 +77,16 @@ export default class MaterialShellExtension
     static get hotKeysModule() {
         return this.instance.hotKeysModule!;
     }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     disableInProgress: boolean | undefined;
-    emit(name: string, ...params: any[]): void {
+    emit(_name: string, ..._params: unknown[]): void {
         throw new Error('Method not implemented.');
     }
-    connect(name: string, callback: (...params: any[]) => void): number {
+    connect(_name: string, _callback: (...params: never[]) => void): number {
         throw new Error('Method not implemented.');
     }
-    disconnect(id: number): void {
+    disconnect(_id: number): void {
         throw new Error('Method not implemented.');
     }
 

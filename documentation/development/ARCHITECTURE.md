@@ -206,7 +206,7 @@ sequenceDiagram
     WM->>WM: handledByMaterialShell = true<br/>debounce 50 мс
     WM->>WM: checkWindowsForAssignations() → assignWindows()
     alt обычное окно
-        WM->>WM: подбор по стоимости среди плиток того же приложения (weighted_matching)
+        WM->>WM: подбор по стоимости среди плиток того же приложения (weightedMatching)
         alt нашлась заглушка
             WM->>W: setWindow(metaWindow)
         else нет подходящей
@@ -356,7 +356,7 @@ flowchart TB
     file --> reload["unloadStylesheet() и load_stylesheet()<br/>подряд, без await между ними"]
     reload --> idle["в idle: themeContext.set_theme(),<br/>Main.reloadThemeResource(), Main.loadTheme()"]
     idle --> changed["St.ThemeContext changed"]
-    changed --> inval["invalidate_style_recursively()<br/>для акторов столов вне сцены"]
+    changed --> inval["invalidateStyleRecursively()<br/>для акторов столов вне сцены"]
 ```
 
 - **Цвет и прозрачности.** CSS собирается один раз при сборке, а настройки

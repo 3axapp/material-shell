@@ -19,7 +19,7 @@
 | `rollup.config.js`, `rollup.config.prefs.js` | Сборка `build/` в два файла, `dist/extension.js` и `dist/prefs.js`, с разрешением алиаса `src/`. |
 | `tsconfig.json` | `target: es2018`, строгий режим, типы только из `@girs/*` и `@types/`. |
 | `documentation/` | Картинки и письмо для пользователей из основного README. Документация для разработчиков — в `docs/development/`. |
-| `.eslintrc.js`, `.prettierrc`, `.editorconfig` | Стиль кода: четыре пробела в коде, два — в документации. |
+| `eslint.config.mjs`, `.prettierrc`, `.editorconfig` | Стиль кода: четыре пробела в коде, два — в документации. |
 
 Генерируется и в git не попадает:
 
@@ -134,7 +134,7 @@
 | `assert.ts`, `predicates.ts` | `assert`, `assertNotNull`, `isNonNull`. |
 | `weighted_matching.ts` | Венгерский алгоритм. `MsWindowManager` сопоставляет им окна с плитками. |
 | `transition.ts` | `TranslationHelper` — анимация сдвига при переключении столов и окон. |
-| `styling_utils.ts` | `invalidate_style_recursively` — сброс кэша стиля у отсоединённых поддеревьев. |
+| `styling_utils.ts` | `invalidateStyleRecursively` — сброс кэша стиля у отсоединённых поддеревьев. |
 | `shellVersionMatch.ts` | Сравнение версий GNOME: `gnomeVersionNumber`, `compareVersions`. |
 | `windows.ts` | Заголовок окна: показать или скрыть. |
 | `compatibility.ts` | Старые имена клавиш в `Clutter`. |

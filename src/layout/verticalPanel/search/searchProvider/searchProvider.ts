@@ -10,18 +10,20 @@ export interface RawMeta {
 }
 
 export interface UnpackedMeta {
-    [prop: string]: any;
+    [prop: string]: unknown;
     id?: string;
     name?: string;
     icon?: GLib.Variant;
     gicon?: string;
     description?: string;
     clipboardText?: string;
+    /** width, height, rowstride, has alpha, bits per sample, channels, data */
+    'icon-data'?: [number, number, number, boolean, number, number, Uint8Array];
 }
 
 export interface ResultMeta {
     id: string;
-    name: string;
+    name: string | null;
     createIcon: (size: number) => St.Icon | null;
     description?: string;
     clipboardText?: string;

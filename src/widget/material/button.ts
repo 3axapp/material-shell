@@ -2,7 +2,7 @@
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 
 /** Extension imports */
@@ -14,7 +14,7 @@ interface MatButtonParams extends Partial<St.Widget.ConstructorProps> {
 
 @registerGObjectClass
 export class MatButton extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatButton',
         Signals: {
             clicked: {
@@ -38,15 +38,15 @@ export class MatButton extends St.Widget {
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
         const child = params.child;
-        const super_params = params;
-        delete super_params.child;
-        delete super_params.primary;
-        Object.assign(super_params, {
+        const superParams = params;
+        delete superParams.child;
+        delete superParams.primary;
+        Object.assign(superParams, {
             reactive: true,
             track_hover: true,
             clip_to_allocation: true,
         });
-        super(super_params);
+        super(superParams);
         this.set_child(child);
         this.rippleBackground = new RippleBackground(this);
         this.add_child(this.rippleBackground);
@@ -77,10 +77,10 @@ export class MatButton extends St.Widget {
         this.add_action(this.longPressGesture);
 
         this.connect('enter-event', () => {
-            Me.msThemeManager!.setCursor(Clutter.CursorType.POINTER);
+            Me.msThemeManager.setCursor(Clutter.CursorType.POINTER);
         });
         this.connect('leave-event', () => {
-            Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
+            Me.msThemeManager.setCursor(Clutter.CursorType.DEFAULT);
         });
     }
 
@@ -112,7 +112,6 @@ export class MatButton extends St.Widget {
         }
     }
 
-    // eslint-disable-next-line camelcase
     set_child(child?: St.Widget) {
         if (this.child) {
             this.remove_child(this.child);

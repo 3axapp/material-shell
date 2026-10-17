@@ -151,7 +151,6 @@ export class BaseTilingLayout<
      *
      * It should end up parented to the tileableContainer.
      */
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     restoreTileable(_tileable: Tileable) {}
 
     tileTileable(
@@ -245,7 +244,7 @@ export class BaseTilingLayout<
         for (const tileable of leavingTileableList) {
             if (
                 tileable instanceof MsWindow &&
-                Me.msWindowManager!.msWindowList.includes(tileable)
+                Me.msWindowManager.msWindowList.includes(tileable)
             ) {
                 this.restoreTileable(tileable);
             }
@@ -265,7 +264,6 @@ export class BaseTilingLayout<
         this.layout_changed();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onWorkAreasChanged() {}
 
     onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
@@ -301,10 +299,10 @@ export class BaseTilingLayout<
         gap?: number
     ) {
         // Reduces box size according to gap setting
-        gap = gap || Me.layoutManager!.gap;
+        gap = gap || Me.layoutManager.gap;
         if (screenGap == undefined) {
-            screenGap = Me.layoutManager!.useScreenGap
-                ? Me.layoutManager!.screenGap
+            screenGap = Me.layoutManager.useScreenGap
+                ? Me.layoutManager.screenGap
                 : gap;
         }
 
@@ -389,7 +387,7 @@ export class BaseTilingLayout<
         this.signals.forEach((signal) => {
             try {
                 signal.from.disconnect(signal.id);
-            } catch (error) {
+            } catch (_error) {
                 Debug.log(
                     `Failed to disconnect signal ${signal.id} from ${
                         signal.from

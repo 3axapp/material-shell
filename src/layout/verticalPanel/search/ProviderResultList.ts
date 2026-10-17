@@ -2,7 +2,7 @@ import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { SearchResultEntry } from './SearchResultEntry';
 import { SearchResultHeader } from './SearchResultHeader';
 import {
@@ -14,7 +14,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class ProviderResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'ProviderResultList',
         Signals: {
             activated: {
@@ -69,7 +69,7 @@ export class ProviderResultList extends St.BoxLayout {
         this.add_child(this.moreResultEntry);
     }
 
-    async updateSearch(newResultList: ResultMeta[], termList: string[]) {
+    async updateSearch(newResultList: ResultMeta[], _termList: string[]) {
         this.visible = newResultList.length > 0;
         this.moreResultEntry.visible =
             newResultList.length > this.maxResultLength;

@@ -172,7 +172,7 @@ print(Gio.resources_lookup_data('/org/gnome/shell/ui/main.js', 0).get_data().dec
 
 - **Где.** St пересчитывает стили только у акторов, прикреплённых к сцене.
   Столы основного монитора, кроме текущего, из сцены вынимаются. Их надо
-  сбрасывать вручную: `invalidate_style_recursively()` в обработчике
+  сбрасывать вручную: `invalidateStyleRecursively()` в обработчике
   `St.ThemeContext::changed` в `MsThemeManager`.
 - **Прецедент.** [#1](https://github.com/3axapp/material-shell/issues/1),
   коммит `db42290`. Если заводите новые акторы, которые живут вне сцены,

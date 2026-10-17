@@ -3,13 +3,12 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 import { throttle } from 'src/utils';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
 import { ProviderResultList } from './search/ProviderResultList';
@@ -40,7 +39,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'SearchResultList',
         Signals: {
             'result-selected-changed': {
@@ -203,7 +202,7 @@ export class SearchResultList extends St.BoxLayout {
             // It's important that we do this first because it will remove the focus grab that we use.
             // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
             // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-            Me.layout!.toggleOverview();
+            Me.layout.toggleOverview();
             let remappedProvider = provider;
 
             if (remappedProvider === this.recentSearchProvider) {
@@ -249,14 +248,15 @@ export class SearchResultList extends St.BoxLayout {
         const index = this.providerList.indexOf(provider);
         this.providerList.splice(index, 1);
 
-        if (this.providerDisplayMap.has(provider)) {
-            this.providerDisplayMap.get(provider)!.destroy();
+        const providerDisplay = this.providerDisplayMap.get(provider);
+        if (providerDisplay !== undefined) {
+            providerDisplay.destroy();
             this.providerDisplayMap.delete(provider);
         }
     }
 
     onTextChanged(): void {
-        const terms = getTermsForSearchString(this.searchEntry.get_text()!);
+        const terms = getTermsForSearchString(this.searchEntry.get_text());
         if (terms == this.terms) return;
         const searchActive = terms.length > 0;
         this.setTerms(terms);
@@ -436,7 +436,7 @@ export class SearchResultList extends St.BoxLayout {
             .filter((appInfo) => {
                 try {
                     const _ = appInfo.get_id(); // catch invalid file encodings
-                } catch (e) {
+                } catch (_e) {
                     return false;
                 }
                 return (
@@ -447,7 +447,7 @@ export class SearchResultList extends St.BoxLayout {
                 );
             })
             .sort((a, b) =>
-                a.get_display_name()!.localeCompare(b.get_display_name()!)
+                a.get_display_name().localeCompare(b.get_display_name())
             );
 
         for (const appInfo of appsInstalled) {
@@ -458,9 +458,9 @@ export class SearchResultList extends St.BoxLayout {
 
             const entry = new SearchResultEntry(
                 icon,
-                appInfo.get_display_name()!,
+                appInfo.get_display_name(),
                 // The remote search provider also provides a description field, but the app search does not
-                appInfo.get_description()!,
+                appInfo.get_description(),
                 true
             );
             entry.connect('primary-action', () => {
@@ -470,12 +470,12 @@ export class SearchResultList extends St.BoxLayout {
                 this.resetAndClose();
 
                 const app = Shell.AppSystem.get_default().lookup_app(
-                    appInfo.get_id()!
+                    assertNotNull(appInfo.get_id())
                 );
                 if (app) {
-                    Me.msWindowManager!.openApp(
+                    Me.msWindowManager.openApp(
                         app,
-                        Me.msWorkspaceManager!.getActiveMsWorkspace()
+                        Me.msWorkspaceManager.getActiveMsWorkspace()
                     );
                 }
             });
@@ -542,6 +542,6 @@ export class SearchResultList extends St.BoxLayout {
 
     resetAndClose() {
         this.reset();
-        Me.layout!.toggleOverview();
+        Me.layout.toggleOverview();
     }
 }

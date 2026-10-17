@@ -7,13 +7,18 @@ const DEBUG = true;
 const FOCUS_ONLY = false;
 let indent = 0;
 
+/** A class prototype whose methods `addLogToFunctions` wraps */
+type LoggedPrototype = Record<string, unknown> & {
+    constructor: { name: string };
+};
+
 export class Debug {
     doLogTick = false;
     constructor() {
         if (DEBUG) {
             // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                const objects: any[] = [
+                const objects: { prototype: LoggedPrototype }[] = [
                     /* MsWindowManager,
                     MsWorkspaceManager,
                     MsThemeManager,
@@ -42,11 +47,11 @@ export class Debug {
         }
     }
 
-    static logWithStackTrace(...args: any[]) {
+    static logWithStackTrace(...args: unknown[]) {
         this.log(...args, new Error().stack);
     }
 
-    static log(...args: any[]) {
+    static log(...args: unknown[]) {
         if (!DEBUG || FOCUS_ONLY) return;
         const fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';
@@ -54,7 +59,7 @@ export class Debug {
         GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
     }
 
-    static logFocus(...args: any[]) {
+    static logFocus(...args: unknown[]) {
         if (!DEBUG) return;
         const fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';
@@ -87,7 +92,7 @@ export class Debug {
         this.doLogTick = false;
     }
 
-    addLogToFunctions(prototype: any) {
+    addLogToFunctions(prototype: LoggedPrototype) {
         if (!DEBUG) return;
         for (const key of Object.getOwnPropertyNames(prototype)) {
             if (key === 'constructor') continue;
@@ -95,7 +100,10 @@ export class Debug {
             if (descriptor) {
                 const value = descriptor.value;
                 if (typeof value === 'function') {
-                    prototype[key] = function (...args: any[]) {
+                    prototype[key] = function (
+                        this: unknown,
+                        ...args: unknown[]
+                    ) {
                         // Before
                         Debug.log(
                             `${prototype.constructor.name}.${key} (${Array.from(
@@ -103,7 +111,7 @@ export class Debug {
                             )
                                 .map((param) => {
                                     try {
-                                        return param.toString();
+                                        return (param as object).toString();
                                     } catch (_e) {
                                         return '';
                                     }

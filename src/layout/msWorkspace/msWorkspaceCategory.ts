@@ -43,7 +43,7 @@ export class MsWorkspaceCategory {
     forceCategory(category: string | undefined) {
         this.forcedCategory = category;
         this.refreshCategory();
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
     }
 
     refreshCategory() {

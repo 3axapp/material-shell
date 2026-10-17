@@ -4,13 +4,13 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as Animation from 'resource:///org/gnome/shell/ui/animation.js';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 /** Extension imports */
 
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'AppPlaceholder',
         Signals: {
             activated: {
@@ -31,7 +31,7 @@ export class AppPlaceholder extends St.Widget {
     callToAction: St.Label;
     spinnerContainer: Clutter.Actor;
     vertical = true;
-    private _spinner: any;
+    private _spinner?: Animation.Spinner;
 
     constructor(icon: Clutter.Actor, textLabel: string) {
         super({

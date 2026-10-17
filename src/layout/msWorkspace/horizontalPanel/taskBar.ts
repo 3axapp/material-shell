@@ -10,7 +10,7 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { diffLists } from 'src/utils/diff_list';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
 import { MatButton } from 'src/widget/material/button';
@@ -24,16 +24,16 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 import { default as Me } from 'src/extension';
 import { Monitor } from 'src/utils/shellTypes';
 
-const isTileableItem = (obj: any): obj is TileableItem => {
+const isTileableItem = (obj: unknown): obj is TileableItem => {
     return obj instanceof TileableItem;
 };
 
-const isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
+const isIconTaskBarItem = (obj: unknown): obj is IconTaskBarItem => {
     return obj instanceof IconTaskBarItem;
 };
 
 const isTileableItemOrIconTaskBarItem = (
-    obj: any
+    obj: unknown
 ): obj is TileableItem | IconTaskBarItem => {
     return isTileableItem(obj) || isIconTaskBarItem(obj);
 };
@@ -71,13 +71,13 @@ export class TaskBar extends St.Widget {
             'foreign-actor-inserted',
             (_, actor, index) => {
                 if (actor.tileable instanceof MsWindow) {
-                    Me.msWorkspaceManager!.setWindowToMsWorkspace(
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
                         actor.tileable,
                         this.msWorkspace
                     );
                     this.msWorkspace.setTileableAtIndex(actor.tileable, index);
                     this.msWorkspace.focusTileable(actor.tileable);
-                    Me.msWorkspaceManager!.stateChanged();
+                    Me.msWorkspaceManager.stateChanged();
                 }
             }
         );
@@ -270,11 +270,11 @@ export class TaskBar extends St.Widget {
 
 @registerGObjectClass
 export class TaskActiveIndicator extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskActiveIndicator',
     };
 
-    constructor(...args: any[]) {
+    constructor(...args: ConstructorParameters<typeof St.Widget>) {
         super(...args);
     }
 
@@ -308,7 +308,7 @@ export class TaskActiveIndicator extends St.Widget {
 
 @registerGObjectClass
 export class TaskBarItem extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskBarItem',
         Signals: {
             'drag-dropped': {},
@@ -362,7 +362,7 @@ export class TaskBarItem extends MatButton {
     }
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager!.getPanelSize();
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 
@@ -378,7 +378,7 @@ export class TaskBarItem extends MatButton {
 
 @registerGObjectClass
 export class TileableItem extends TaskBarItem {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TileableItem',
         Signals: {
             'close-clicked': {},
@@ -478,7 +478,7 @@ export class TileableItem extends TaskBarItem {
             style_class: 'task-bar-item-title',
             y_align: Clutter.ActorAlign.CENTER,
         });
-        Me.tooltipManager!.add(this.title, { relativeActor: this });
+        Me.tooltipManager.add(this.title, { relativeActor: this });
 
         this.signalManager = new MsManager();
         this.style = getSettings('theme').get_string('taskbar-item-style');
@@ -589,7 +589,7 @@ export class TileableItem extends TaskBarItem {
             this.title.text = '';
         } else {
             if (this.style == 'full') {
-                if (this.tileable.title!.includes(this.app.get_name()!)) {
+                if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
                     const escapedAppName = GLib.markup_escape_text(
@@ -646,7 +646,7 @@ export class IconTaskBarItem extends TaskBarItem {
         this.icon = new St.Icon({
             gicon,
             style_class: 'app-icon',
-            icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
+            icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
         this.tileable = tileable;
@@ -663,7 +663,7 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     vfunc_allocate(box: Clutter.ActorBox) {
-        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
             this.buildIconIdle.schedule(height);

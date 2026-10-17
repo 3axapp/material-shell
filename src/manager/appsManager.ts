@@ -1,5 +1,6 @@
 /** Gnome libs imports */
 import Shell from 'gi://Shell';
+import { assertNotNull } from 'src/utils/assert';
 
 export class AppsManager {
     static getApps() {
@@ -8,7 +9,7 @@ export class AppsManager {
         const appsInstalled = appSystem.get_installed().filter((appInfo) => {
             try {
                 const _ = appInfo.get_id(); // catch invalid file encodings
-            } catch (e) {
+            } catch (_e) {
                 return false;
             }
             return appInfo.should_show();
@@ -16,10 +17,13 @@ export class AppsManager {
 
         return appsInstalled
             .sort((a, b) => {
-                return usage.compare(a.get_id()!, b.get_id()!);
+                return usage.compare(
+                    assertNotNull(a.get_id()),
+                    assertNotNull(b.get_id())
+                );
             })
             .map((appInfo) => {
-                return appSystem.lookup_app(appInfo.get_id()!);
+                return appSystem.lookup_app(assertNotNull(appInfo.get_id()));
             });
     }
 }

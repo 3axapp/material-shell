@@ -1,27 +1,26 @@
-import GObject from 'gi://GObject';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 
 import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class MatPanelButton extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatPanelButton',
     };
 
     constructor(params = {}) {
         super(params);
         this.add_style_class_name('mat-panel-button');
-        const panelSizeSignal = Me.msThemeManager!.connect(
+        const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => {
                 this.queue_relayout();
             }
         );
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(panelSizeSignal);
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
     }
 
@@ -29,10 +28,12 @@ export class MatPanelButton extends MatButton {
      * Just the panel width
      */
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 
@@ -40,10 +41,12 @@ export class MatPanelButton extends MatButton {
      * Just the panel height
      */
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scale_factor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 }

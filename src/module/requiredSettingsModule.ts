@@ -31,7 +31,7 @@ function getDynamic(
 ): string | boolean {
     switch (valueType) {
         case 'string':
-            return settings.get_string(key)!;
+            return settings.get_string(key);
         case 'boolean':
             return settings.get_boolean(key);
     }

@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
@@ -11,7 +10,7 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
-import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
@@ -93,13 +92,12 @@ export class MsWorkspace extends WithSignals {
                 focusedIndex: 0,
                 forcedCategory: null,
                 msWindowList: [],
-                layoutStateList: Me.layoutManager!.defaultLayoutKeyList.map(
+                layoutStateList: Me.layoutManager.defaultLayoutKeyList.map(
                     (layoutKey) => {
-                        return Me.layoutManager!.getLayoutByKey(layoutKey)
-                            .state;
+                        return Me.layoutManager.getLayoutByKey(layoutKey).state;
                     }
                 ),
-                layoutKey: Me.layoutManager!.defaultLayoutKey,
+                layoutKey: Me.layoutManager.defaultLayoutKey,
             },
             state
         );
@@ -147,7 +145,7 @@ export class MsWorkspace extends WithSignals {
             // Note: lookup_app can return null even though the type definitions don't say that.
             const app: Shell.App | null = appSys.lookup_app(msWindowData.appId);
             if (app) {
-                Me.msWindowManager!.createNewMsWindow(
+                Me.msWindowManager.createNewMsWindow(
                     app,
                     {
                         msWorkspace: this,
@@ -210,7 +208,7 @@ export class MsWorkspace extends WithSignals {
 
     private set focusedIndex(index) {
         this._state.focusedIndex = index;
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
     }
 
     get state(): MsWorkspaceState {
@@ -288,7 +286,7 @@ export class MsWorkspace extends WithSignals {
         msWindow.setMsWorkspace(this);
         try {
             return await this.addMsWindowUnchecked(msWindow, focus, insert);
-        } catch (e) {
+        } catch (_e) {
             return Debug.logWithStackTrace('addMsWindowUnchecked failed');
         }
     }
@@ -594,7 +592,7 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        this.layout = Me.layoutManager!.createLayout(
+        this.layout = Me.layoutManager.createLayout(
             this,
             assertNotNull(
                 this.state.layoutStateList.find(
@@ -609,8 +607,8 @@ export class MsWorkspace extends WithSignals {
     shouldPanelBeVisible() {
         return !this.containFullscreenWindow &&
             this.msWorkspaceManager &&
-            Me.layout!
-            ? Me.layout!.panelsVisible
+            Me.layout
+            ? Me.layout.panelsVisible
             : true;
     }
 
@@ -664,7 +662,7 @@ export class MsWorkspace extends WithSignals {
 
 @registerGObjectClass
 export class MsWorkspaceActor extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsWorkspaceActor',
     };
     tileableContainer: Clutter.Actor;
@@ -703,7 +701,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
-        const panelPosition = Me.msThemeManager!.horizontalPanelPosition;
+        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         const panelHeight = (
             this.panel.get_preferred_height(-1) as [number, number]
         )[1];

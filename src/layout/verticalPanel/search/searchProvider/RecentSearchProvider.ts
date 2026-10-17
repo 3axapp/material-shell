@@ -1,5 +1,5 @@
 import St from 'gi://St';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { ResultMeta } from './searchProvider';
 
 import { default as Me } from 'src/extension';
@@ -25,11 +25,11 @@ export class RecentSearchProvider {
         return 'Recent';
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(_iconSize: number): St.Icon | null {
         return null;
     }
 
-    activateResult(id: string, terms: string[]): void {
+    activateResult(_id: string, _terms: string[]): void {
         throw new Error(
             'Should never be called. Remap to original provider instead.'
         );
@@ -45,7 +45,7 @@ export class RecentSearchProvider {
     }
 
     loadHistoryFromExtensionState() {
-        const historyState = Me.stateManager!.getState(STATE_KEY);
+        const historyState = Me.stateManager.getState(STATE_KEY);
         if (
             historyState !== undefined &&
             historyState.history !== undefined &&
@@ -55,26 +55,26 @@ export class RecentSearchProvider {
         }
     }
 
-    onResultActivated(provider_id: string, id: string, terms: string[]) {
+    onResultActivated(providerId: string, id: string, terms: string[]) {
         assert(
-            provider_id != this.id,
+            providerId != this.id,
             'Trying to add recent item to history again. Remap it to the original provider first.'
         );
-        if (provider_id === 'org.gnome.Calculator.desktop') {
+        if (providerId === 'org.gnome.Calculator.desktop') {
             // Do not include calculator results in the history.
             // It rarely makes sense to suggest recent calculations again
             return;
         }
         this.historyList.push({
             id,
-            provider_id,
+            provider_id: providerId,
             terms,
             context: this.getContext(),
         });
         if (this.historyList.length > MAX_HISTORY_SIZE) {
             this.historyList.shift();
         }
-        Me.stateManager!.setState(STATE_KEY, {
+        Me.stateManager.setState(STATE_KEY, {
             history: this.historyList,
         });
     }
@@ -84,36 +84,38 @@ export class RecentSearchProvider {
             timestamp: new Date().getTime(),
             visible_apps: [
                 ...new Set(
-                    Me.msWindowManager!.msWindowList.filter(
-                        (x) =>
-                            x.lifecycleState.type === 'window' &&
-                            x.msWorkspace.isDisplayed()
-                    ).map((x) => x.state.appId)
+                    Me.msWindowManager.msWindowList
+                        .filter(
+                            (x) =>
+                                x.lifecycleState.type === 'window' &&
+                                x.msWorkspace.isDisplayed()
+                        )
+                        .map((x) => x.state.appId)
                 ).values(),
             ],
             open_apps: [
                 ...new Set(
-                    Me.msWindowManager!.msWindowList.filter(
-                        (x) => x.lifecycleState.type === 'window'
-                    ).map((x) => x.state.appId)
+                    Me.msWindowManager.msWindowList
+                        .filter((x) => x.lifecycleState.type === 'window')
+                        .map((x) => x.state.appId)
                 ).values(),
             ],
             workspace_index:
-                Me.msWorkspaceManager!.workspaceManager.get_active_workspace_index(),
+                Me.msWorkspaceManager.workspaceManager.get_active_workspace_index(),
         };
     }
 
     search(
         terms: string[],
-        provider_results: Map<string, ResultMeta[]>
+        providerResults: Map<string, ResultMeta[]>
     ): ResultMeta[] {
         terms = terms.map((x) => x.toLocaleLowerCase());
 
         // Check which results have been found by providers
         const seen = new Map<string, ResultMeta>();
-        for (const [provider_id, metas] of provider_results) {
+        for (const [providerId, metas] of providerResults) {
             for (const meta of metas) {
-                seen.set(provider_id + SEPARATOR + meta.id, meta);
+                seen.set(providerId + SEPARATOR + meta.id, meta);
             }
         }
 
@@ -143,9 +145,9 @@ export class RecentSearchProvider {
                 (count + CONSTANT_OFFSET) / best.length >
                 PROBABILITY_THRESHOLD
             ) {
-                const key =
-                    dominantItem.provider_id + SEPARATOR + dominantItem.id;
-                const bestMeta = seen.get(key)!;
+                const item = assertNotNull(dominantItem);
+                const key = item.provider_id + SEPARATOR + item.id;
+                const bestMeta = assertNotNull(seen.get(key));
                 return [
                     {
                         id: key,
@@ -164,7 +166,9 @@ export class RecentSearchProvider {
     }
 }
 
-function getDominantItem(items: HistoryItem[]): [HistoryItem, number] {
+function getDominantItem(
+    items: HistoryItem[]
+): [HistoryItem | undefined, number] {
     assert(items.length > 0, 'Cannot get dominant item from empty list');
     const counts = new Map<string, number>();
     for (const item of items) {
@@ -174,8 +178,8 @@ function getDominantItem(items: HistoryItem[]): [HistoryItem, number] {
     }
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     const key = sorted[0][0];
-    const [provider_id, id] = key.split(SEPARATOR);
-    const item = items.find((x) => x.provider_id == provider_id && x.id == id)!;
+    const [providerId, id] = key.split(SEPARATOR);
+    const item = items.find((x) => x.provider_id == providerId && x.id == id);
     return [item, sorted[0][1]];
 }
 
@@ -293,53 +297,53 @@ class DecisionTree {
 
     private static getCategories(history: HistoryItem[]): SplitCategory[] {
         const categories: SplitCategory[] = [];
-        const visible_apps = new Set<string>();
-        const open_apps = new Set<string>();
-        const workspace_indices = new Set<number>();
-        const days_of_week = new Set<number>();
-        const times_of_day = new Set<
+        const visibleApps = new Set<string>();
+        const openApps = new Set<string>();
+        const workspaceIndices = new Set<number>();
+        const daysOfWeek = new Set<number>();
+        const timesOfDay = new Set<
             'morning' | 'afternoon' | 'evening' | 'night'
         >();
         for (const item of history) {
-            for (const app_id of item.context.visible_apps) {
-                visible_apps.add(app_id);
+            for (const appId of item.context.visible_apps) {
+                visibleApps.add(appId);
             }
-            for (const app_id of item.context.open_apps) {
-                open_apps.add(app_id);
+            for (const appId of item.context.open_apps) {
+                openApps.add(appId);
             }
-            workspace_indices.add(item.context.workspace_index);
-            days_of_week.add(getDayOfWeek(item.context.timestamp));
-            times_of_day.add(getTimeOfDay(item.context.timestamp));
+            workspaceIndices.add(item.context.workspace_index);
+            daysOfWeek.add(getDayOfWeek(item.context.timestamp));
+            timesOfDay.add(getTimeOfDay(item.context.timestamp));
         }
 
-        for (const app_id of visible_apps) {
+        for (const appId of visibleApps) {
             categories.push({
                 id: 'isAppVisible',
-                app_id,
+                app_id: appId,
             });
         }
-        for (const app_id of open_apps) {
+        for (const appId of openApps) {
             categories.push({
                 id: 'isAppOpen',
-                app_id,
+                app_id: appId,
             });
         }
-        for (const day_of_week of days_of_week) {
+        for (const dayOfWeek of daysOfWeek) {
             categories.push({
                 id: 'isDayOfWeek',
-                day_of_week,
+                day_of_week: dayOfWeek,
             });
         }
-        for (const time_of_day of times_of_day) {
+        for (const timeOfDay of timesOfDay) {
             categories.push({
                 id: 'isTimeOfDay',
-                time_of_day,
+                time_of_day: timeOfDay,
             });
         }
-        for (const workspace_index of workspace_indices) {
+        for (const workspaceIndex of workspaceIndices) {
             categories.push({
                 id: 'isWorkspaceIndex',
-                workspace_index,
+                workspace_index: workspaceIndex,
             });
         }
         return categories;
@@ -366,9 +370,14 @@ class DecisionTree {
             }
         }
 
-        if (bestSplit[0].length == 0 || bestSplit[1].length == 0) return null;
+        if (
+            bestCategory === undefined ||
+            bestSplit[0].length == 0 ||
+            bestSplit[1].length == 0
+        )
+            return null;
         return {
-            split: bestCategory!,
+            split: bestCategory,
             falsy: bestSplit[0],
             truthy: bestSplit[1],
         };

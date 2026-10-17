@@ -28,16 +28,16 @@ export class AppSearchProvider {
         this._parentalControlsManager = ParentalControlsManager.getDefault();
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(_iconSize: number): St.Icon | null {
         return null;
     }
 
-    activateResult(id: string, terms: string[]): void {
+    activateResult(id: string, _terms: string[]): void {
         const app = Shell.AppSystem.get_default().lookup_app(id);
         if (app) {
-            Me.msWindowManager!.openApp(
+            Me.msWindowManager.openApp(
                 app,
-                Me.msWorkspaceManager!.getActiveMsWorkspace()
+                Me.msWorkspaceManager.getActiveMsWorkspace()
             );
         } else {
             SystemActions.getDefault().activateAction(id);
@@ -45,27 +45,29 @@ export class AppSearchProvider {
     }
 
     getResultMetas(apps: string[]) {
-        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor: scaleFactor } = St.ThemeContext.get_for_stage(
+            global.stage
+        );
         const metas: ResultMeta[] = [];
         for (const id of apps) {
             if (id.endsWith('.desktop')) {
                 const app = this._appSys.lookup_app(id);
 
                 metas.push({
-                    id: app.get_id()!,
-                    name: app.get_name()!,
+                    id: app.get_id(),
+                    name: app.get_name(),
                     createIcon: (size) =>
                         app.create_icon_texture(size) as St.Icon,
                 });
             } else {
-                const name = this._systemActions.getName(id)!;
-                const iconName = this._systemActions.getIconName(id)!;
+                const name = this._systemActions.getName(id);
+                const iconName = this._systemActions.getIconName(id);
 
                 const createIcon = (size: number) =>
                     new St.Icon({
                         icon_name: iconName,
-                        width: size * scale_factor,
-                        height: size * scale_factor,
+                        width: size * scaleFactor,
+                        height: size * scaleFactor,
                         style_class: 'system-action-icon',
                     });
 
