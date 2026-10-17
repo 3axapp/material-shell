@@ -9,12 +9,12 @@
 ## Место в GNOME Shell
 
 GNOME Shell — это JavaScript поверх mutter. mutter управляет окнами (`Meta.*`),
-Clutter рисует сцену из актёров, St добавляет к актёрам CSS. Расширение
+Clutter рисует сцену из акторов, St добавляет к акторам CSS. Расширение
 работает в том же процессе и пользуется теми же объектами: `global.display`,
 `global.workspace_manager`, `Main.layoutManager` и так далее.
 
 Material Shell не рисует окна сам и не заменяет mutter. Он строит поверх окон
-собственное дерево актёров и держит настоящие окна под ним в нужных местах.
+собственное дерево акторов и держит настоящие окна под ним в нужных местах.
 
 ```mermaid
 flowchart TB
@@ -299,7 +299,7 @@ stateDiagram-v2
 Настройки доходят до экрана так: gsettings испускает `changed::ключ`,
 менеджер ловит его через `observe()`, обновляет своё поле и либо сам
 перестраивает раскладку (`LayoutManager.tileWindows()`), либо испускает свой
-сигнал для актёров (`MsThemeManager`).
+сигнал для акторов (`MsThemeManager`).
 
 ## Фокус
 
@@ -307,15 +307,15 @@ stateDiagram-v2
 
 - **фокус окна mutter** (`global.display.focus_window`) — какому приложению
   идут клавиши;
-- **key focus Clutter** (`global.stage.key_focus`) — какой актёр шелла их
-  получает. Заглушка, лаунчер, поле поиска в панели — это актёры шелла.
+- **key focus Clutter** (`global.stage.key_focus`) — какой актор шелла их
+  получает. Заглушка, лаунчер, поле поиска в панели — это акторы шелла.
 
 `MsFocusManager` сводит оба к одному вопросу: какая плитка сейчас в фокусе.
 
 ```mermaid
 flowchart TB
     fw["global.display notify::focus-window"] --> onWF["MsFocusManager.onWindowFocus()<br/>msWindow.focusDialogs()"]
-    kf["global.stage notify::key-focus"] --> onKF["MsFocusManager.onKeyFocus()<br/>ищет MsWindow среди предков актёра"]
+    kf["global.stage notify::key-focus"] --> onKF["MsFocusManager.onKeyFocus()<br/>ищет MsWindow среди предков актора"]
     onWF --> set["setFocusToMsWindow()"]
     onKF --> set
     set -->|"focus-changed"| wsm["MsWorkspaceManager"]
@@ -323,7 +323,7 @@ flowchart TB
     ft --> idx["focusedIndex, история фокуса"]
     ft -->|"стол активен"| gkf["tileable.grab_key_focus()"]
     gkf -->|"в плитке есть окно"| act["metaWindow.activate()"]
-    gkf -->|"заглушка или лаунчер"| actor["key focus на актёр шелла"]
+    gkf -->|"заглушка или лаунчер"| actor["key focus на актор шелла"]
     ft -->|"tileable-focus-changed"| layout["раскладка, TaskBar"]
 ```
 
@@ -334,15 +334,15 @@ flowchart TB
   и отдаётся плитке через `refreshFocus()`.
 
 После смены стола `MsFocusManager` 100 мс держит `focusProtected`. Если в это
-время key focus пропадёт, он вернётся на прежний актёр, но только если тот
+время key focus пропадёт, он вернётся на прежний актор, но только если тот
 остался на видимом столе.
 
-**Главное правило.** Пока key focus держит актёр шелла или поднят stage grab
+**Главное правило.** Пока key focus держит актор шелла или поднят stage grab
 (`Main.pushModal`, `global.stage.grab`), mutter не передаёт клавиши
 Wayland-клиентам. Отпускание сочетания до окна не доходит, и оно считает
 клавишу нажатой. Отсюда залипания из [#2](https://github.com/3axapp/material-shell/issues/2)
 и [#10](https://github.com/3axapp/material-shell/issues/10). Любая правка,
-которая ставит key focus на актёр или берёт grab, должна отвечать на вопрос,
+которая ставит key focus на актор или берёт grab, должна отвечать на вопрос,
 когда фокус уйдёт обратно к окну. Подробнее — в
 [PLAYBOOKS.md](PLAYBOOKS.md#залипает-клавиша).
 
@@ -356,7 +356,7 @@ flowchart TB
     file --> reload["unloadStylesheet() и load_stylesheet()<br/>подряд, без await между ними"]
     reload --> idle["в idle: themeContext.set_theme(),<br/>Main.reloadThemeResource(), Main.loadTheme()"]
     idle --> changed["St.ThemeContext changed"]
-    changed --> inval["invalidate_style_recursively()<br/>для актёров столов вне сцены"]
+    changed --> inval["invalidate_style_recursively()<br/>для акторов столов вне сцены"]
 ```
 
 - **Цвет и прозрачности.** CSS собирается один раз при сборке, а настройки
@@ -366,12 +366,12 @@ flowchart TB
 - **Порядок unload и load.** Между ними нет `await`. Два перекрывающихся
   вызова иначе загружали стиль дважды и ломали `St.Theme` до конца сессии:
   [#9](https://github.com/3axapp/material-shell/issues/9).
-- **Столы вне сцены.** St обходит только прикреплённые к сцене актёры. Столы,
+- **Столы вне сцены.** St обходит только прикреплённые к сцене акторы. Столы,
   которых сейчас не видно, сохраняли бы кэш стиля от старой темы, поэтому их
   сбрасывают вручную.
 
 Остальные настройки темы — размер и положение панелей, иконки, размытие,
-часы, эффект фокуса — CSS не трогают. Они приходят к актёрам сигналами
+часы, эффект фокуса — CSS не трогают. Они приходят к акторам сигналами
 `MsThemeManager`.
 
 ## Сохранённое состояние

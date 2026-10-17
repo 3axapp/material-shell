@@ -84,9 +84,9 @@
 
 | Путь | Что делает |
 |------|------------|
-| `main.ts` | `MsMain` — корневой актёр. Вставляется в `Main.layoutManager.uiGroup` над `global.window_group`. По одному `MonitorContainer` на монитор; основной (`PrimaryMonitorContainer`) несёт и вертикальную панель. Обзор по клавише `Super`. |
-| `msWorkspace/msWorkspace.ts` | `MsWorkspace` — модель одного стола: список плиток (`tileableList`: окна и лаунчер), фокус, история фокуса, текущая раскладка. `MsWorkspaceActor` — его актёр с горизонтальной панелью. |
-| `msWorkspace/msWindow.ts` | `MsWindow` — актёр-плитка вокруг окна приложения (`Meta.Window`) и его диалогов. Хранит состояние жизненного цикла, двигает и масштабирует настоящее окно под свою аллокацию. |
+| `main.ts` | `MsMain` — корневой актор. Вставляется в `Main.layoutManager.uiGroup` над `global.window_group`. По одному `MonitorContainer` на монитор; основной (`PrimaryMonitorContainer`) несёт и вертикальную панель. Обзор по клавише `Super`. |
+| `msWorkspace/msWorkspace.ts` | `MsWorkspace` — модель одного стола: список плиток (`tileableList`: окна и лаунчер), фокус, история фокуса, текущая раскладка. `MsWorkspaceActor` — его актор с горизонтальной панелью. |
+| `msWorkspace/msWindow.ts` | `MsWindow` — актор-плитка вокруг окна приложения (`Meta.Window`) и его диалогов. Хранит состояние жизненного цикла, двигает и масштабирует настоящее окно под свою аллокацию. |
 | `msWorkspace/msWorkspaceCategory.ts` | Категория стола по приложениям на нём (Development, Game, …). Отвечает за иконку в списке столов. |
 | `msWorkspace/portion.ts` | Дерево пропорций для раскладок с изменяемыми размерами. |
 | `msWorkspace/tilingLayouts/baseTiling.ts` | `BaseTilingLayout` — основа всех раскладок: подписка на изменения списка и фокуса, `tileAll()`, показ лаунчера. |
@@ -99,7 +99,7 @@
 | `verticalPanel/statusArea.ts` | Забирает индикаторы и меню даты из верхней панели шелла (`Main.panel`) в вертикальную панель и возвращает их при выключении. |
 | `verticalPanel/extendedPanelContent.ts`, `searchResultList.ts`, `search/` | Раскрытая панель с поиском. Поставщики: приложения, удалённые (D-Bus) поставщики шелла, недавнее с учётом контекста. |
 
-### `widget/` — переиспользуемые актёры
+### `widget/` — переиспользуемые акторы
 
 | Файл | Что делает |
 |------|------------|

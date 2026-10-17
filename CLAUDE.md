@@ -15,6 +15,7 @@
 | [ARCHITECTURE.md](documentation/development/ARCHITECTURE.md) | Схемы: жизненный цикл, путь окна, фокус, тема, состояние |
 | [PLAYBOOKS.md](documentation/development/PLAYBOOKS.md) | Пути поиска решения по типовым проблемам |
 | [TESTING.md](documentation/development/TESTING.md) | Как запускать тесты и как писать новые |
+| [REQUIREMENTS.md](documentation/development/REQUIREMENTS.md) | Функциональные требования — чек-лист регрессий |
 
 ## Что важно знать до первой правки
 
@@ -33,4 +34,4 @@
   regeneration`.
 - Правки фокуса и клавиатуры сверяй с разделом
   [«Залипает клавиша»](documentation/development/PLAYBOOKS.md#залипает-клавиша):
-  пока key focus держит актёр шелла, Wayland-клиенты не получают клавиш.
+  пока key focus держит актор шелла, Wayland-клиенты не получают клавиш.
