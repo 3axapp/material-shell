@@ -350,11 +350,14 @@ export class MsStatusArea extends Clutter.Actor {
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
             const menu = menuData;
 
-            if (menu._boxPointer) {
-                menu._boxPointer._calculateArrowSide = (
-                    menu._boxPointer as any
-                ).oldArrowSideFunction;
-                delete (menu._boxPointer as any).oldArrowSideFunction;
+            // Menus added to the panel after overridePanelMenuSide have
+            // nothing saved; assigning undefined would shadow the prototype
+            // method and break them.
+            const boxPointer = menu._boxPointer as any;
+            if (boxPointer && boxPointer.oldArrowSideFunction !== undefined) {
+                boxPointer._calculateArrowSide =
+                    boxPointer.oldArrowSideFunction;
+                delete boxPointer.oldArrowSideFunction;
             }
         }
     }
