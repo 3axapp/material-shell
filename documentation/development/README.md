@@ -29,6 +29,8 @@ make compile     # только сборка в dist/
 npm run dev      # сборка при каждом сохранении (tsc-watch)
 make test        # проверки окна настроек
 make test-shell  # тесты внутри вложенного шелла, см. TESTING.md
+make lint        # eslint по src/ и tests/, с проверкой форматирования
+make format      # prettier --write по src/ и tests/
 make build_prod  # dist.zip для extensions.gnome.org
 ```
 

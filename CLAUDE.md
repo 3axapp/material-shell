@@ -25,7 +25,7 @@
   [«Вложенный шелл»](documentation/development/README.md#вложенный-шелл).
 - Сборка — `make compile`, тесты окна настроек — `make test`, тесты внутри
   шелла — `make test-shell` (открывает окно Mdk на несколько секунд, нужен
-  `mutter-devkit`). Как писать тесты — в
+  `mutter-devkit`), линтер — `make lint`, форматирование — `make format`. Как писать тесты — в
   [TESTING.md](documentation/development/TESTING.md).
 - Object spread и rest (`{...a}`) в `src/` ломают сборку: их не понимает
   esprima внутри `scripts/transpile.ts`. Пиши `Object.assign`.
