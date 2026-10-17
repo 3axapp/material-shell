@@ -209,7 +209,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                     const date = new Date();
                     const dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
-                    )!;
+                    );
                     // TODO: toLocaleFormat is deprecated
                     dateLabel.text = formatDateWithCFormatString(
                         date,
@@ -324,7 +324,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             this.msWorkspace.focusPreviousTileableFromHistory();
             return;
         }
-        if (this.inputContainer.get_text()!.length) {
+        if (this.inputContainer.get_text().length) {
             this.inputContainer.set_text('');
             this._text.cursor_position = -1;
             return;
@@ -342,7 +342,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.filteredAppButtonListBuffer = this.appButtonList.filter(
             (button) => {
                 const stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
-                const regex = new RegExp(this.inputContainer.get_text()!, 'i');
+                const regex = new RegExp(this.inputContainer.get_text(), 'i');
                 if (regex.test(stringToSearch)) {
                     button.visible = true;
                     return true;

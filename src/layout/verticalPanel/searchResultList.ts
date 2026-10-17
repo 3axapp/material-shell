@@ -255,7 +255,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     onTextChanged(): void {
-        const terms = getTermsForSearchString(this.searchEntry.get_text()!);
+        const terms = getTermsForSearchString(this.searchEntry.get_text());
         if (terms == this.terms) return;
         const searchActive = terms.length > 0;
         this.setTerms(terms);
@@ -446,7 +446,7 @@ export class SearchResultList extends St.BoxLayout {
                 );
             })
             .sort((a, b) =>
-                a.get_display_name()!.localeCompare(b.get_display_name()!)
+                a.get_display_name().localeCompare(b.get_display_name())
             );
 
         for (const appInfo of appsInstalled) {
@@ -457,7 +457,7 @@ export class SearchResultList extends St.BoxLayout {
 
             const entry = new SearchResultEntry(
                 icon,
-                appInfo.get_display_name()!,
+                appInfo.get_display_name(),
                 // The remote search provider also provides a description field, but the app search does not
                 appInfo.get_description()!,
                 true

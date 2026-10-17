@@ -589,7 +589,7 @@ export class TileableItem extends TaskBarItem {
             this.title.text = '';
         } else {
             if (this.style == 'full') {
-                if (this.tileable.title!.includes(this.app.get_name()!)) {
+                if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
                     const escapedAppName = GLib.markup_escape_text(

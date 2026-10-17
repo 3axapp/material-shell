@@ -239,7 +239,7 @@ export class MsWindow extends Clutter.Actor {
                 break;
             case 'window':
                 matchingInfo = {
-                    appId: this.app.id!,
+                    appId: this.app.id,
                     title: this.lifecycleState.metaWindow?.title ?? '',
                     pid: this.lifecycleState.metaWindow?.get_pid(),
                     wmClass:
@@ -251,7 +251,7 @@ export class MsWindow extends Clutter.Actor {
                 break;
             default:
                 matchingInfo = {
-                    appId: this.app.id!,
+                    appId: this.app.id,
                     title: undefined,
                     pid: undefined,
                     wmClass: undefined,
@@ -260,7 +260,7 @@ export class MsWindow extends Clutter.Actor {
         }
 
         return {
-            appId: this.app.id!,
+            appId: this.app.id,
             // For compatibility we save a meta window identifier string.
             // This is useful if the user decides to downgrade material-shell to a previous version.
             metaWindowIdentifier:
@@ -377,7 +377,7 @@ export class MsWindow extends Clutter.Actor {
         this.placeholder.setIcon(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE)
         );
-        this.placeholder.setTitle(this.app.get_name()!);
+        this.placeholder.setTitle(this.app.get_name());
     }
 
     delayGetMetaWindowActor(

@@ -100,7 +100,7 @@ export function loadRemoteSearchProviders(
             const busName = keyfile.get_string(group, 'BusName');
             const objectPath = keyfile.get_string(group, 'ObjectPath');
 
-            if (objectPaths[objectPath!]) return;
+            if (objectPaths[objectPath]) return;
 
             let appInfo = null;
             try {
@@ -129,15 +129,15 @@ export function loadRemoteSearchProviders(
             if (parseInt(version) >= 2)
                 remoteProvider = new RemoteSearchProvider2(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
             else
                 remoteProvider = new RemoteSearchProvider(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
 
@@ -151,7 +151,7 @@ export function loadRemoteSearchProviders(
                 // ignore error
             }
 
-            objectPaths[objectPath!] = remoteProvider;
+            objectPaths[objectPath] = remoteProvider;
             loadedProviders.push(remoteProvider);
         } catch (e) {
             log(`Failed to add search provider ${path}: ${e}`);
@@ -220,7 +220,7 @@ export class RemoteSearchProvider {
     searchInProgress = false;
 
     get title(): string {
-        return this.appInfo.get_name()!;
+        return this.appInfo.get_name();
     }
 
     constructor(

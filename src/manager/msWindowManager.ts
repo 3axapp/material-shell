@@ -293,16 +293,16 @@ export class MsWindowManager extends MsManager {
             windowActorGroup,
         ] of groupedMetaWindowsByApp.entries()) {
             const candidateMsWindows =
-                groupedMsWindowsByApp.get(groupKey!) || [];
+                groupedMsWindowsByApp.get(groupKey) || [];
             const costMatrix: number[][] = [];
             for (const windowActor of windowActorGroup) {
                 const metaWindow = metaWindowOf(windowActor);
                 const windowInfo: MsWindowMatchingInfo = {
-                    appId: groupKey!,
+                    appId: groupKey,
                     wmClass: metaWindow.get_wm_class_instance()!,
                     pid: metaWindow.get_pid(),
                     stableSeq: metaWindow.get_stable_sequence(),
-                    title: metaWindow.title!,
+                    title: metaWindow.title,
                 };
 
                 const costs = candidateMsWindows.map((msWindow) =>
@@ -630,7 +630,7 @@ export class MsWindowManager extends MsManager {
 
         if (matchingInfo === undefined) {
             matchingInfo = {
-                appId: app.id!,
+                appId: app.id,
                 title: undefined,
                 pid: undefined,
                 wmClass: undefined,
@@ -755,7 +755,7 @@ export class MsWindowManager extends MsManager {
         }
         if (msWindow.lifecycleState.matchingInfo === undefined) {
             msWindow.lifecycleState.matchingInfo = {
-                appId: msWindow.app.id!,
+                appId: msWindow.app.id,
                 title: undefined,
                 pid: undefined,
                 wmClass: undefined,
@@ -783,19 +783,19 @@ export class MsWindowManager extends MsManager {
     private handleWindow(metaWindow: MetaWindowWithMsProperties) {
         if (
             metaWindow.wm_class !== '' &&
-            getSettings('layouts')!
-                .get_string('windows-excluded')!
+            getSettings('layouts')
+                .get_string('windows-excluded')
                 .split(',')
                 .map((item) => item.trim())
                 .indexOf(metaWindow.wm_class!) > -1
         ) {
             return false;
         }
-        const windowRole = metaWindow.get_role()!;
+        const windowRole = metaWindow.get_role();
         if (
             windowRole !== '' &&
-            getSettings('layouts')!
-                .get_string('roles-excluded')!
+            getSettings('layouts')
+                .get_string('roles-excluded')
                 .split(',')
                 .map((item) => item.trim())
                 .indexOf(windowRole) !== -1

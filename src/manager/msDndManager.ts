@@ -156,8 +156,8 @@ export class MsDndManager extends MsManager {
         this.dragInProgress = {
             msWindow,
             originPointerAnchor: [
-                relativeX! / msWindow.width,
-                relativeY! / msWindow.height,
+                relativeX / msWindow.width,
+                relativeY / msWindow.height,
             ],
             originalParent,
         };
