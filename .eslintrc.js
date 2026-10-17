@@ -5,10 +5,9 @@ module.exports = {
     env: {
         es6: true,
     },
-    extends: ['eslint:recommended', 'plugin:prettier/recommended', 'prettier'],
-    plugins: ['prettier', '@typescript-eslint'],
+    extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    plugins: ['@typescript-eslint'],
     rules: {
-        'prettier/prettier': 'error',
         camelcase: [
             'off',
             {
