@@ -4,6 +4,7 @@ import Gio from 'gi://Gio';
 import GnomeDesktop from 'gi://GnomeDesktop';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
@@ -17,6 +18,11 @@ import { reparentActor } from 'src/utils/index';
 /** Extension imports */
 import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
+/** Keeps a panel menu's own _calculateArrowSide while ours is installed. */
+type OverriddenBoxPointer = BoxPointer.BoxPointer & {
+    oldArrowSideFunction?: BoxPointer.BoxPointer['_calculateArrowSide'];
+};
+
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
     static metaInfo: MetaInfo = {
@@ -334,8 +340,9 @@ export class MsStatusArea extends Clutter.Actor {
             const menu = menuData;
 
             if (menu._boxPointer) {
-                (menu._boxPointer as any).oldArrowSideFunction =
-                    menu._boxPointer._calculateArrowSide;
+                (
+                    menu._boxPointer as OverriddenBoxPointer
+                ).oldArrowSideFunction = menu._boxPointer._calculateArrowSide;
                 menu._boxPointer._calculateArrowSide = function () {
                     return Me.msThemeManager.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
@@ -353,7 +360,7 @@ export class MsStatusArea extends Clutter.Actor {
             // Menus added to the panel after overridePanelMenuSide have
             // nothing saved; assigning undefined would shadow the prototype
             // method and break them.
-            const boxPointer = menu._boxPointer as any;
+            const boxPointer = menu._boxPointer as OverriddenBoxPointer;
             if (boxPointer && boxPointer.oldArrowSideFunction !== undefined) {
                 boxPointer._calculateArrowSide =
                     boxPointer.oldArrowSideFunction;

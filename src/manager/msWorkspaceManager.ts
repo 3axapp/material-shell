@@ -23,6 +23,11 @@ import { getSettings } from 'src/utils/settings';
 import { MetaWindowWithMsProperties } from './msWindowManager';
 import { Monitor } from 'src/utils/shellTypes';
 
+/** Keeps gnome-shell's own _checkWorkspaces while ours is installed. */
+type WorkspaceTrackerPrototype = WindowManager.WorkspaceTracker & {
+    _oldCheckWorkspaces?: WindowManager.WorkspaceTracker['_checkWorkspaces'];
+};
+
 interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
     primaryWorkspaceActiveIndex: number;
@@ -61,7 +66,8 @@ export class MsWorkspaceManager extends MsManager {
         this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
         (
-            Main.wm._workspaceTracker.constructor.prototype as any
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
         )._oldCheckWorkspaces =
             Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces;
         Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces =
@@ -239,10 +245,13 @@ export class MsWorkspaceManager extends MsManager {
     destroy() {
         super.destroy();
         Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces = (
-            Main.wm._workspaceTracker.constructor.prototype as any
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
         )._oldCheckWorkspaces;
-        delete (Main.wm._workspaceTracker.constructor.prototype as any)
-            ._oldCheckWorkspaces;
+        delete (
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
+        )._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
             const workspace = this.workspaceManager.get_workspace_by_index(
