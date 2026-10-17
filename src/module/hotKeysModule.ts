@@ -6,6 +6,7 @@ import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { TilingLayoutByKey } from 'src/manager/layoutManager';
+import { assertNotNull } from 'src/utils/assert';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 
@@ -205,7 +206,9 @@ export class HotKeysModule {
         });
         Meta.keybindings_set_custom_handler(
             'move-to-workspace-up',
-            this.actionNameToActionMap.get(KeyBindingAction.MOVE_WINDOW_TOP)!
+            assertNotNull(
+                this.actionNameToActionMap.get(KeyBindingAction.MOVE_WINDOW_TOP)
+            )
         );
 
         this.actionNameToActionMap.set(
@@ -280,7 +283,11 @@ export class HotKeysModule {
 
         Meta.keybindings_set_custom_handler(
             'move-to-workspace-down',
-            this.actionNameToActionMap.get(KeyBindingAction.MOVE_WINDOW_BOTTOM)!
+            assertNotNull(
+                this.actionNameToActionMap.get(
+                    KeyBindingAction.MOVE_WINDOW_BOTTOM
+                )
+            )
         );
 
         this.actionNameToActionMap.set(
@@ -411,9 +418,11 @@ export class HotKeysModule {
             );
             Meta.keybindings_set_custom_handler(
                 `move-to-monitor-${DIRECTION.toLowerCase()}`,
-                this.actionNameToActionMap.get(
-                    KeyBindingAction[`MOVE_WINDOW_MONITOR_${DIRECTION}`]
-                )!
+                assertNotNull(
+                    this.actionNameToActionMap.get(
+                        KeyBindingAction[`MOVE_WINDOW_MONITOR_${DIRECTION}`]
+                    )
+                )
             );
         });
 

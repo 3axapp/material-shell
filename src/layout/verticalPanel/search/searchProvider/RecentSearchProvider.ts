@@ -1,5 +1,5 @@
 import St from 'gi://St';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { ResultMeta } from './searchProvider';
 
 import { default as Me } from 'src/extension';
@@ -145,9 +145,9 @@ export class RecentSearchProvider {
                 (count + CONSTANT_OFFSET) / best.length >
                 PROBABILITY_THRESHOLD
             ) {
-                const key =
-                    dominantItem.provider_id + SEPARATOR + dominantItem.id;
-                const bestMeta = seen.get(key)!;
+                const item = assertNotNull(dominantItem);
+                const key = item.provider_id + SEPARATOR + item.id;
+                const bestMeta = assertNotNull(seen.get(key));
                 return [
                     {
                         id: key,
@@ -166,7 +166,9 @@ export class RecentSearchProvider {
     }
 }
 
-function getDominantItem(items: HistoryItem[]): [HistoryItem, number] {
+function getDominantItem(
+    items: HistoryItem[]
+): [HistoryItem | undefined, number] {
     assert(items.length > 0, 'Cannot get dominant item from empty list');
     const counts = new Map<string, number>();
     for (const item of items) {
@@ -177,7 +179,7 @@ function getDominantItem(items: HistoryItem[]): [HistoryItem, number] {
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     const key = sorted[0][0];
     const [providerId, id] = key.split(SEPARATOR);
-    const item = items.find((x) => x.provider_id == providerId && x.id == id)!;
+    const item = items.find((x) => x.provider_id == providerId && x.id == id);
     return [item, sorted[0][1]];
 }
 
