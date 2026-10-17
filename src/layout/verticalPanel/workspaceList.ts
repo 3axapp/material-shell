@@ -406,8 +406,10 @@ export class WorkspaceButton extends MatButton {
         });
 
         rootMenu.addMenuItem(subMenu);
+        // Hidden before it reaches the stage, so it is never mapped. Not
+        // close(): it animates, so the menu stays on screen for 150 ms.
+        rootMenu.actor.hide();
         Main.layoutManager.uiGroup.add_child(rootMenu.actor);
-        rootMenu.close();
 
         return {
             menu: rootMenu,
