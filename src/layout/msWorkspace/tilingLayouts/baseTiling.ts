@@ -151,7 +151,6 @@ export class BaseTilingLayout<
      *
      * It should end up parented to the tileableContainer.
      */
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     restoreTileable(_tileable: Tileable) {}
 
     tileTileable(
@@ -265,7 +264,6 @@ export class BaseTilingLayout<
         this.layout_changed();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onWorkAreasChanged() {}
 
     onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {

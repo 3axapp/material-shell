@@ -9,6 +9,7 @@ import {
     HorizontalPanelPositionEnum,
     msThemeSignalEnum,
 } from 'src/manager/msThemeManager';
+import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalObserver } from 'src/utils/signal';
 import { MsWorkspace } from '../msWorkspace';
@@ -24,7 +25,7 @@ export class HorizontalPanel extends St.BoxLayout {
     layoutSwitcher: LayoutSwitcher;
     clockLabel: St.Label | undefined;
     clockBin: St.BoxLayout | null | undefined;
-    private _wallClock: any;
+    private _wallClock?: GnomeDesktop.WallClock;
     msWorkspace: MsWorkspace;
     signalObserver = new SignalObserver();
     constructor(msWorkspace: MsWorkspace) {
@@ -77,7 +78,7 @@ export class HorizontalPanel extends St.BoxLayout {
         this.clockBin.add_child(clockLabel);
         this._wallClock = new GnomeDesktop.WallClock();
         const updateClock = () => {
-            clockLabel.text = this._wallClock.clock;
+            clockLabel.text = assertNotNull(this._wallClock).clock;
         };
         const signalClock = this._wallClock.connect(
             'notify::clock',
@@ -92,7 +93,7 @@ export class HorizontalPanel extends St.BoxLayout {
         });
         this.insert_child_at_index(this.clockBin, 1);
         clockLabel.connect('destroy', () => {
-            this._wallClock.disconnect(signalClock);
+            assertNotNull(this._wallClock).disconnect(signalClock);
             delete this._wallClock;
         });
     }

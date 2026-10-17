@@ -31,9 +31,8 @@ export class MsNotificationManager extends MsManager {
             Me.stateManager.setState('notification-uuid', uuid);
         }
 
-        const previousCheck = Me.stateManager.getState('notification-check')
-            ? new Date(Me.stateManager.getState('notification-check'))
-            : new Date();
+        const lastCheck = Me.stateManager.getState('notification-check');
+        const previousCheck = lastCheck ? new Date(lastCheck) : new Date();
 
         const message = Soup.Message.new(
             'GET',

@@ -174,7 +174,7 @@ Looking Glass открывается через `Alt+F2` → `lg`. Экземп�
   коммитов — по-английски, с номером в начале: `issue-9 Throttle stylesheet
   regeneration`. В `gnome-51` ветка вливается merge-коммитом
   `Merge branch 'issue-N' into gnome-51`.
-- Стиль кода задают `.eslintrc.js` и `.prettierrc`: четыре пробела в коде,
+- Стиль кода задают `eslint.config.mjs` и `.prettierrc`: четыре пробела в коде,
   два в документации.
 - Имена переменных, параметров и функций — camelCase без сокращений
   (`iconSize`, а не `icon_size`), классов — PascalCase, констант —

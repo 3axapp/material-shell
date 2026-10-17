@@ -4,6 +4,9 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import { default as Me } from 'src/extension';
+import { MsWorkspaceState } from 'src/layout/msWorkspace/msWorkspace';
+import { HistoryItem } from 'src/layout/verticalPanel/search/searchProvider/RecentSearchProvider';
+import { MsWorkspaceManagerState } from 'src/manager/msWorkspaceManager';
 
 import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
@@ -13,10 +16,34 @@ const FileTest = GLib.FileTest;
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/material-shell@papyelgringo-state.json`;
 
-type StateDict = { [Key: string]: any };
+/** What the extension keeps between sessions, by key. */
+export interface PersistedState {
+    'panels-visible'?: boolean;
+    'notification-uuid'?: string;
+    /** ISO date of the last notification check. */
+    'notification-check'?: string;
+    'workspaces-state'?: MsWorkspaceManagerState;
+    'recent-searches'?: { history: HistoryItem[] };
+}
+
+/** Older versions kept workspaces in two lists. */
+type LegacyWorkspacesState = Omit<
+    MsWorkspaceManagerState,
+    'msWorkspaceList'
+> & {
+    msWorkspaceList?: LegacyMsWorkspaceState[];
+    primaryWorkspaceList: LegacyMsWorkspaceState[];
+    externalWorkspaces: LegacyMsWorkspaceState[];
+};
+
+/** Older versions called layoutKey tilingLayout. */
+type LegacyMsWorkspaceState = Omit<MsWorkspaceState, 'layoutKey'> & {
+    layoutKey?: string;
+    tilingLayout?: string;
+};
 
 export class StateManager {
-    state: StateDict;
+    state: PersistedState;
     stateFile: Gio.File;
     stateChangedTriggered: boolean | undefined;
 
@@ -24,7 +51,7 @@ export class StateManager {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
-    loadRegistry(callback: (state: StateDict) => void) {
+    loadRegistry(callback: (state: PersistedState) => void) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
         const serializedState = global.get_persistent_state(
@@ -63,9 +90,11 @@ export class StateManager {
         }
     }
 
-    updateState(state: StateDict) {
+    updateState(state: PersistedState) {
         if (state) {
-            const workspacesState = state['workspaces-state'];
+            const workspacesState = state['workspaces-state'] as
+                | LegacyWorkspacesState
+                | undefined;
             if (workspacesState) {
                 // in old version the workspaces was split in 2 different array
                 workspacesState.msWorkspaceList =
@@ -74,13 +103,15 @@ export class StateManager {
                         ...workspacesState.externalWorkspaces,
                     ];
 
-                workspacesState.msWorkspaceList.map((msWorkspaceState: any) => {
-                    msWorkspaceState.layoutKey =
-                        msWorkspaceState.layoutKey ||
-                        msWorkspaceState.tilingLayout;
-                    delete msWorkspaceState.tilingLayout;
-                    return msWorkspaceState;
-                });
+                workspacesState.msWorkspaceList.map(
+                    (msWorkspaceState: LegacyMsWorkspaceState) => {
+                        msWorkspaceState.layoutKey =
+                            msWorkspaceState.layoutKey ||
+                            msWorkspaceState.tilingLayout;
+                        delete msWorkspaceState.tilingLayout;
+                        return msWorkspaceState;
+                    }
+                );
             }
         }
         return state;
@@ -93,10 +124,10 @@ export class StateManager {
             GLib.Variant.new_string(json)
         );
     }
-    getState(key: string) {
+    getState<K extends keyof PersistedState>(key: K): PersistedState[K] {
         return this.state[key];
     }
-    setState(key: string, value: unknown) {
+    setState<K extends keyof PersistedState>(key: K, value: PersistedState[K]) {
         if (value === undefined) {
             delete this.state[key];
         } else {
@@ -131,6 +162,5 @@ export class StateManager {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     destroy() {}
 }

@@ -58,14 +58,14 @@ export class TooltipManager extends MsManager {
         params: Partial<MatTooltipParams>
     ): MatTooltip | undefined {
         // If actor has text, use it instead because it may be updated
-        let actorText: string | undefined;
+        let actorText: string | null | undefined;
         if (actor instanceof St.Label || actor instanceof Clutter.Text) {
             const clutterText =
                 actor instanceof St.Label
                     ? (actor.get_clutter_text() as Clutter.Text)
                     : actor;
             if (clutterText.get_layout().is_ellipsized()) {
-                actorText = clutterText.get_text()!;
+                actorText = clutterText.get_text();
             }
         }
         if (actorText) params.text = actorText;

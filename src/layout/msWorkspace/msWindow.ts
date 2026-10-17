@@ -373,7 +373,7 @@ export class MsWindow extends Clutter.Actor {
             "Expected the MsWindow to be in the 'window' state"
         );
         this.trackAppChanges();
-        state.matchingInfo.appId = this.app.id!;
+        state.matchingInfo.appId = this.app.id;
         this.placeholder.setIcon(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE)
         );
@@ -503,13 +503,11 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
-    // eslint-disable-next-line camelcase
     override set_position(x: number, y: number) {
         if (this.followMetaWindow) return;
         super.set_position(x, y);
     }
 
-    // eslint-disable-next-line camelcase
     override set_size(width: number, height: number) {
         if (this.followMetaWindow) return;
         super.set_size(width, height);

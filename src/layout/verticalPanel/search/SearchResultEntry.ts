@@ -25,8 +25,8 @@ export class SearchResultEntry extends MatButton {
     description: St.Label | null;
     constructor(
         icon: St.Icon | null,
-        title: string,
-        description?: string,
+        title: string | null,
+        description?: string | null,
         _withMenu?: boolean
     ) {
         super({});
@@ -40,7 +40,7 @@ export class SearchResultEntry extends MatButton {
 
         this.layout.add_child(this.textLayout);
         this.title = new St.Label({
-            text: title,
+            text: title ?? undefined,
         });
         this.textLayout.add_child(this.title);
         if (description) {

@@ -299,7 +299,7 @@ export class MsWindowManager extends MsManager {
                 const metaWindow = metaWindowOf(windowActor);
                 const windowInfo: MsWindowMatchingInfo = {
                     appId: groupKey,
-                    wmClass: metaWindow.get_wm_class_instance()!,
+                    wmClass: metaWindow.get_wm_class_instance() ?? undefined,
                     pid: metaWindow.get_pid(),
                     stableSeq: metaWindow.get_stable_sequence(),
                     title: metaWindow.title,
@@ -781,13 +781,15 @@ export class MsWindowManager extends MsManager {
     }
 
     private handleWindow(metaWindow: MetaWindowWithMsProperties) {
+        const wmClass = metaWindow.wm_class;
         if (
-            metaWindow.wm_class !== '' &&
+            wmClass !== null &&
+            wmClass !== '' &&
             getSettings('layouts')
                 .get_string('windows-excluded')
                 .split(',')
                 .map((item) => item.trim())
-                .indexOf(metaWindow.wm_class!) > -1
+                .indexOf(wmClass) > -1
         ) {
             return false;
         }

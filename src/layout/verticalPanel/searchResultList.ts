@@ -6,7 +6,7 @@ import GLib from 'gi://GLib';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 import { throttle } from 'src/utils';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
@@ -248,8 +248,9 @@ export class SearchResultList extends St.BoxLayout {
         const index = this.providerList.indexOf(provider);
         this.providerList.splice(index, 1);
 
-        if (this.providerDisplayMap.has(provider)) {
-            this.providerDisplayMap.get(provider)!.destroy();
+        const providerDisplay = this.providerDisplayMap.get(provider);
+        if (providerDisplay !== undefined) {
+            providerDisplay.destroy();
             this.providerDisplayMap.delete(provider);
         }
     }
@@ -459,7 +460,7 @@ export class SearchResultList extends St.BoxLayout {
                 icon,
                 appInfo.get_display_name(),
                 // The remote search provider also provides a description field, but the app search does not
-                appInfo.get_description()!,
+                appInfo.get_description(),
                 true
             );
             entry.connect('primary-action', () => {
@@ -469,7 +470,7 @@ export class SearchResultList extends St.BoxLayout {
                 this.resetAndClose();
 
                 const app = Shell.AppSystem.get_default().lookup_app(
-                    appInfo.get_id()!
+                    assertNotNull(appInfo.get_id())
                 );
                 if (app) {
                     Me.msWindowManager.openApp(
