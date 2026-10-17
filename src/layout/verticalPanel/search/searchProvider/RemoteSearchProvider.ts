@@ -88,7 +88,7 @@ export function loadRemoteSearchProviders(
 
         try {
             keyfile.load_from_file(path as string, 0);
-        } catch (e) {
+        } catch (_e) {
             return;
         }
 
@@ -107,7 +107,7 @@ export function loadRemoteSearchProviders(
                 const desktopId = keyfile.get_string(group, 'DesktopId');
                 appInfo = GioUnix.DesktopAppInfo.new(desktopId);
                 if (!appInfo.should_show()) return;
-            } catch (e) {
+            } catch (_e) {
                 log(`Ignoring search provider ${path}: missing DesktopId`);
                 return;
             }
@@ -115,14 +115,14 @@ export function loadRemoteSearchProviders(
             let autoStart = true;
             try {
                 autoStart = keyfile.get_boolean(group, 'AutoStart');
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
             let version = '1';
             try {
                 version = keyfile.get_string(group, 'Version')!;
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
@@ -147,7 +147,7 @@ export function loadRemoteSearchProviders(
                     group,
                     'DefaultDisabled'
                 );
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 

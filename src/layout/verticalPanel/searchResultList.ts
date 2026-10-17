@@ -435,7 +435,7 @@ export class SearchResultList extends St.BoxLayout {
             .filter((appInfo) => {
                 try {
                     const _ = appInfo.get_id(); // catch invalid file encodings
-                } catch (e) {
+                } catch (_e) {
                     return false;
                 }
                 return (

@@ -389,7 +389,7 @@ export class BaseTilingLayout<
         this.signals.forEach((signal) => {
             try {
                 signal.from.disconnect(signal.id);
-            } catch (error) {
+            } catch (_error) {
                 Debug.log(
                     `Failed to disconnect signal ${signal.id} from ${
                         signal.from

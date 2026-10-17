@@ -42,7 +42,7 @@ export class MsManager extends WithSignals {
             if (signal.from) {
                 try {
                     signal.from.disconnect(signal.id);
-                } catch (error) {
+                } catch (_error) {
                     Debug.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from

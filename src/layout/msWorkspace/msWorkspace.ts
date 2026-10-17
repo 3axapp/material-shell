@@ -286,7 +286,7 @@ export class MsWorkspace extends WithSignals {
         msWindow.setMsWorkspace(this);
         try {
             return await this.addMsWindowUnchecked(msWindow, focus, insert);
-        } catch (e) {
+        } catch (_e) {
             return Debug.logWithStackTrace('addMsWindowUnchecked failed');
         }
     }

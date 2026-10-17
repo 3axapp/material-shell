@@ -36,7 +36,7 @@ export class StateManager {
                 this.state = this.updateState(
                     JSON.parse(serializedState.deep_unpack<string>())
                 );
-            } catch (e) {
+            } catch (_e) {
                 this.state = {};
             }
             return callback(this.state);

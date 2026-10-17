@@ -8,7 +8,7 @@ export class AppsManager {
         const appsInstalled = appSystem.get_installed().filter((appInfo) => {
             try {
                 const _ = appInfo.get_id(); // catch invalid file encodings
-            } catch (e) {
+            } catch (_e) {
                 return false;
             }
             return appInfo.should_show();

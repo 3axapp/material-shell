@@ -887,9 +887,11 @@ export class MsWindow extends Clutter.Actor {
             this.lifecycleState.type == 'window' &&
             this.lifecycleState.metaWindow !== null
         ) {
-            this.followMetaWindow
-                ? this.mimicMetaWindowPositionAndSize()
-                : this.updateMetaWindowPositionAndSize();
+            if (this.followMetaWindow) {
+                this.mimicMetaWindowPositionAndSize();
+            } else {
+                this.updateMetaWindowPositionAndSize();
+            }
         }
 
         this.resizeDialogs();
