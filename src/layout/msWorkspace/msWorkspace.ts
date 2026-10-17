@@ -93,13 +93,12 @@ export class MsWorkspace extends WithSignals {
                 focusedIndex: 0,
                 forcedCategory: null,
                 msWindowList: [],
-                layoutStateList: Me.layoutManager!.defaultLayoutKeyList.map(
+                layoutStateList: Me.layoutManager.defaultLayoutKeyList.map(
                     (layoutKey) => {
-                        return Me.layoutManager!.getLayoutByKey(layoutKey)
-                            .state;
+                        return Me.layoutManager.getLayoutByKey(layoutKey).state;
                     }
                 ),
-                layoutKey: Me.layoutManager!.defaultLayoutKey,
+                layoutKey: Me.layoutManager.defaultLayoutKey,
             },
             state
         );
@@ -147,7 +146,7 @@ export class MsWorkspace extends WithSignals {
             // Note: lookup_app can return null even though the type definitions don't say that.
             const app: Shell.App | null = appSys.lookup_app(msWindowData.appId);
             if (app) {
-                Me.msWindowManager!.createNewMsWindow(
+                Me.msWindowManager.createNewMsWindow(
                     app,
                     {
                         msWorkspace: this,
@@ -210,7 +209,7 @@ export class MsWorkspace extends WithSignals {
 
     private set focusedIndex(index) {
         this._state.focusedIndex = index;
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
     }
 
     get state(): MsWorkspaceState {
@@ -594,7 +593,7 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        this.layout = Me.layoutManager!.createLayout(
+        this.layout = Me.layoutManager.createLayout(
             this,
             assertNotNull(
                 this.state.layoutStateList.find(
@@ -609,8 +608,8 @@ export class MsWorkspace extends WithSignals {
     shouldPanelBeVisible() {
         return !this.containFullscreenWindow &&
             this.msWorkspaceManager &&
-            Me.layout!
-            ? Me.layout!.panelsVisible
+            Me.layout
+            ? Me.layout.panelsVisible
             : true;
     }
 
@@ -703,7 +702,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
-        const panelPosition = Me.msThemeManager!.horizontalPanelPosition;
+        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         const panelHeight = (
             this.panel.get_preferred_height(-1) as [number, number]
         )[1];

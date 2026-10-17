@@ -71,13 +71,13 @@ export class TaskBar extends St.Widget {
             'foreign-actor-inserted',
             (_, actor, index) => {
                 if (actor.tileable instanceof MsWindow) {
-                    Me.msWorkspaceManager!.setWindowToMsWorkspace(
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
                         actor.tileable,
                         this.msWorkspace
                     );
                     this.msWorkspace.setTileableAtIndex(actor.tileable, index);
                     this.msWorkspace.focusTileable(actor.tileable);
-                    Me.msWorkspaceManager!.stateChanged();
+                    Me.msWorkspaceManager.stateChanged();
                 }
             }
         );
@@ -362,7 +362,7 @@ export class TaskBarItem extends MatButton {
     }
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager!.getPanelSize();
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 
@@ -478,7 +478,7 @@ export class TileableItem extends TaskBarItem {
             style_class: 'task-bar-item-title',
             y_align: Clutter.ActorAlign.CENTER,
         });
-        Me.tooltipManager!.add(this.title, { relativeActor: this });
+        Me.tooltipManager.add(this.title, { relativeActor: this });
 
         this.signalManager = new MsManager();
         this.style = getSettings('theme').get_string('taskbar-item-style');
@@ -646,7 +646,7 @@ export class IconTaskBarItem extends TaskBarItem {
         this.icon = new St.Icon({
             gicon,
             style_class: 'app-icon',
-            icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
+            icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
         this.tileable = tileable;
@@ -663,7 +663,7 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     vfunc_allocate(box: Clutter.ActorBox) {
-        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
             this.buildIconIdle.schedule(height);

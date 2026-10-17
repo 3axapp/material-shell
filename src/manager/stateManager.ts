@@ -108,7 +108,7 @@ export class StateManager {
     stateChanged() {
         if (
             !Me.instance.loaded ||
-            Me.msWorkspaceManager!.updatingMonitors ||
+            Me.msWorkspaceManager.updatingMonitors ||
             this.stateChangedTriggered ||
             Me.instance.disableInProgress
         )
@@ -127,7 +127,7 @@ export class StateManager {
         if (!Me.instance.loaded || Me.instance.disableInProgress) return;
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
-            this.setState('workspaces-state', Me.msWorkspaceManager!.state);
+            this.setState('workspaces-state', Me.msWorkspaceManager.state);
         }
     }
 

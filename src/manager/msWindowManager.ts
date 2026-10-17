@@ -385,7 +385,7 @@ export class MsWindowManager extends MsManager {
                     // Did not find a good match, create a new window instead
                     this.createNewMsWindow(metaWindowOf(windowActor), {
                         msWorkspace:
-                            Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
+                            Me.msWorkspaceManager.determineAppropriateMsWorkspace(
                                 metaWindowOf(windowActor)
                             ),
                         focus: true,
@@ -527,7 +527,7 @@ export class MsWindowManager extends MsManager {
                 // No good existing MsWindow was found, instead we create a new MsWindow just for this dialog.
                 this.createNewMsWindow(metaWindowOf(windowActor), {
                     msWorkspace:
-                        Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
+                        Me.msWorkspaceManager.determineAppropriateMsWorkspace(
                             metaWindowOf(windowActor)
                         ),
                     focus: true,
@@ -565,7 +565,7 @@ export class MsWindowManager extends MsManager {
         const actor = metaWindow.get_compositor_private() as Meta.WindowActor;
 
         if (!this.handleWindow(metaWindow)) {
-            /* return Me.layout!.setActorAbove(metaWindow.get_compositor_private<
+            /* return Me.layout.setActorAbove(metaWindow.get_compositor_private<
                     Meta.WindowActor
                 >()); */
             const parent = actor.get_parent();
@@ -676,7 +676,7 @@ export class MsWindowManager extends MsManager {
 
     openApp(app: Shell.App, msWorkspace: MsWorkspace, insert = false) {
         if (app.can_open_new_window()) {
-            const msWindow = Me.msWindowManager!.createNewMsWindow(app, {
+            const msWindow = Me.msWindowManager.createNewMsWindow(app, {
                 msWorkspace: msWorkspace,
                 focus: true,
                 insert: insert,
@@ -767,7 +767,7 @@ export class MsWindowManager extends MsManager {
         this.checkWindowsForAssignationsDebounce.schedule();
 
         const workspaceIndex =
-            Me.msWorkspaceManager!.primaryMsWorkspaces.indexOf(
+            Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                 msWindow.msWorkspace
             );
         if (

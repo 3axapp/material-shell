@@ -137,11 +137,11 @@ export class LayoutSwitcher extends St.BoxLayout {
             return true;
 
         // Add the layout in the right order
-        const wantedIndex = Me.layoutManager!.layoutList.findIndex((layout) => {
+        const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
             return layoutKey === layout.state.key;
         });
         // Note: This cast is safe, typescript is just not good enough to figure that out
-        const newState = Me.layoutManager!.getLayoutByKey(layoutKey)
+        const newState = Me.layoutManager.getLayoutByKey(layoutKey)
             .state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
@@ -152,7 +152,7 @@ export class LayoutSwitcher extends St.BoxLayout {
                 newState
             );
         }
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
         return true;
     }
 
@@ -168,13 +168,13 @@ export class LayoutSwitcher extends St.BoxLayout {
             (layoutState) => layoutState.key === layoutKey
         );
         this.msWorkspace.state.layoutStateList.splice(index, 1);
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
 
         return true;
     }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
-        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {

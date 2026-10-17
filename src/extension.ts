@@ -46,6 +46,9 @@ export default class MaterialShellExtension
         ) as MaterialShellExtension;
     }
 
+    /* The managers are created in enable(); these getters assume the caller
+     * runs after that */
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     static get stateManager() {
         return this.instance.stateManager!;
     }
@@ -74,6 +77,7 @@ export default class MaterialShellExtension
     static get hotKeysModule() {
         return this.instance.hotKeysModule!;
     }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     disableInProgress: boolean | undefined;
     emit(_name: string, ..._params: any[]): void {

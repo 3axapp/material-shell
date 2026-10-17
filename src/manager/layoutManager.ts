@@ -203,10 +203,10 @@ export class LayoutManager extends MsManager {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
                     msWorkspace =
-                        Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
+                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 } else {
                     msWorkspace =
-                        Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
+                        Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             monitor.index
                         )[0];
                 }

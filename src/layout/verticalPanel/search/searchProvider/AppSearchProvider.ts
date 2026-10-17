@@ -35,9 +35,9 @@ export class AppSearchProvider {
     activateResult(id: string, _terms: string[]): void {
         const app = Shell.AppSystem.get_default().lookup_app(id);
         if (app) {
-            Me.msWindowManager!.openApp(
+            Me.msWindowManager.openApp(
                 app,
-                Me.msWorkspaceManager!.getActiveMsWorkspace()
+                Me.msWorkspaceManager.getActiveMsWorkspace()
             );
         } else {
             SystemActions.getDefault().activateAction(id);

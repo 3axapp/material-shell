@@ -45,7 +45,7 @@ export class RecentSearchProvider {
     }
 
     loadHistoryFromExtensionState() {
-        const historyState = Me.stateManager!.getState(STATE_KEY);
+        const historyState = Me.stateManager.getState(STATE_KEY);
         if (
             historyState !== undefined &&
             historyState.history !== undefined &&
@@ -74,7 +74,7 @@ export class RecentSearchProvider {
         if (this.historyList.length > MAX_HISTORY_SIZE) {
             this.historyList.shift();
         }
-        Me.stateManager!.setState(STATE_KEY, {
+        Me.stateManager.setState(STATE_KEY, {
             history: this.historyList,
         });
     }
@@ -84,22 +84,24 @@ export class RecentSearchProvider {
             timestamp: new Date().getTime(),
             visible_apps: [
                 ...new Set(
-                    Me.msWindowManager!.msWindowList.filter(
-                        (x) =>
-                            x.lifecycleState.type === 'window' &&
-                            x.msWorkspace.isDisplayed()
-                    ).map((x) => x.state.appId)
+                    Me.msWindowManager.msWindowList
+                        .filter(
+                            (x) =>
+                                x.lifecycleState.type === 'window' &&
+                                x.msWorkspace.isDisplayed()
+                        )
+                        .map((x) => x.state.appId)
                 ).values(),
             ],
             open_apps: [
                 ...new Set(
-                    Me.msWindowManager!.msWindowList.filter(
-                        (x) => x.lifecycleState.type === 'window'
-                    ).map((x) => x.state.appId)
+                    Me.msWindowManager.msWindowList
+                        .filter((x) => x.lifecycleState.type === 'window')
+                        .map((x) => x.state.appId)
                 ).values(),
             ],
             workspace_index:
-                Me.msWorkspaceManager!.workspaceManager.get_active_workspace_index(),
+                Me.msWorkspaceManager.workspaceManager.get_active_workspace_index(),
         };
     }
 

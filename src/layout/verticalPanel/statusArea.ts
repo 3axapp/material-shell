@@ -52,13 +52,13 @@ export class MsStatusArea extends Clutter.Actor {
         this.dateMenu = assertNotNull(this.gnomeShellPanel.statusArea.dateMenu);
         this.enable();
 
-        const panelSizeSignal = Me.msThemeManager!.connect(
+        const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => this.onPanelSizeChanged()
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(panelSizeSignal);
+            Me.msThemeManager.disconnect(panelSizeSignal);
             this.restoreAppIndicatorSettings();
         });
 
@@ -261,7 +261,7 @@ export class MsStatusArea extends Clutter.Actor {
     iconSize() {
         return Math.max(
             16.0,
-            Math.round(Me.msThemeManager!.getPanelSizeNotScaled() / 3)
+            Math.round(Me.msThemeManager.getPanelSizeNotScaled() / 3)
         );
     }
 
@@ -338,7 +338,7 @@ export class MsStatusArea extends Clutter.Actor {
                 (menu._boxPointer as any).oldArrowSideFunction =
                     menu._boxPointer._calculateArrowSide;
                 menu._boxPointer._calculateArrowSide = function () {
-                    return Me.msThemeManager!.verticalPanelPosition ===
+                    return Me.msThemeManager.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
                         ? St.Side.LEFT
                         : St.Side.RIGHT;
@@ -428,16 +428,16 @@ export class MsDateMenuBox extends St.Widget {
         this.iconDisplay.add_child(this.notificationIcon);
         this.iconDisplay.add_child(this.notificationIconRing);
         this.iconDisplay.add_child(this.dndIcon);
-        if (Me.msThemeManager!.clockHorizontal) {
+        if (Me.msThemeManager.clockHorizontal) {
             this.add_child(this.iconDisplay);
         } else {
             this.add_child(this.clockLabel);
         }
 
-        const clockHorizontalSignal = Me.msThemeManager!.connect(
+        const clockHorizontalSignal = Me.msThemeManager.connect(
             'clock-horizontal-changed',
             () => {
-                if (Me.msThemeManager!.clockHorizontal) {
+                if (Me.msThemeManager.clockHorizontal) {
                     this.remove_child(this.clockLabel);
                     this.add_child(this.iconDisplay);
                 } else {
@@ -461,7 +461,7 @@ export class MsDateMenuBox extends St.Widget {
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(clockHorizontalSignal);
+            Me.msThemeManager.disconnect(clockHorizontalSignal);
             this.indicatorActor.disconnect(this.indicatorSignal);
             this._wallClock.disconnect(this.dateMenuSignal);
             delete this._wallClock;
@@ -489,7 +489,7 @@ export class MsDateMenuBox extends St.Widget {
     updateVisibility() {
         const doNotDisturb = !this._settings.get_boolean('show-banners');
         if (this.indicatorActor.visible) {
-            if (Me.msThemeManager!.clockHorizontal) {
+            if (Me.msThemeManager.clockHorizontal) {
                 if (doNotDisturb) {
                     this.dndIcon.show();
                     this.notificationIconRing.hide();
@@ -509,7 +509,7 @@ export class MsDateMenuBox extends St.Widget {
                 this.clockLabel.add_style_class_name('primary');
             }
         } else {
-            if (Me.msThemeManager!.clockHorizontal) {
+            if (Me.msThemeManager.clockHorizontal) {
                 this.notificationIcon.show();
                 this.notificationIconRing.hide();
                 this.dndIcon.hide();

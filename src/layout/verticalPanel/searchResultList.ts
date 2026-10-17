@@ -203,7 +203,7 @@ export class SearchResultList extends St.BoxLayout {
             // It's important that we do this first because it will remove the focus grab that we use.
             // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
             // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-            Me.layout!.toggleOverview();
+            Me.layout.toggleOverview();
             let remappedProvider = provider;
 
             if (remappedProvider === this.recentSearchProvider) {
@@ -473,9 +473,9 @@ export class SearchResultList extends St.BoxLayout {
                     appInfo.get_id()!
                 );
                 if (app) {
-                    Me.msWindowManager!.openApp(
+                    Me.msWindowManager.openApp(
                         app,
-                        Me.msWorkspaceManager!.getActiveMsWorkspace()
+                        Me.msWorkspaceManager.getActiveMsWorkspace()
                     );
                 }
             });
@@ -542,6 +542,6 @@ export class SearchResultList extends St.BoxLayout {
 
     resetAndClose() {
         this.reset();
-        Me.layout!.toggleOverview();
+        Me.layout.toggleOverview();
     }
 }

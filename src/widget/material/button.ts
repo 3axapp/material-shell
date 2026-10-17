@@ -77,10 +77,10 @@ export class MatButton extends St.Widget {
         this.add_action(this.longPressGesture);
 
         this.connect('enter-event', () => {
-            Me.msThemeManager!.setCursor(Clutter.CursorType.POINTER);
+            Me.msThemeManager.setCursor(Clutter.CursorType.POINTER);
         });
         this.connect('leave-event', () => {
-            Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
+            Me.msThemeManager.setCursor(Clutter.CursorType.DEFAULT);
         });
     }
 

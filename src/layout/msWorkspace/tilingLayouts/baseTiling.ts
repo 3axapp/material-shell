@@ -245,7 +245,7 @@ export class BaseTilingLayout<
         for (const tileable of leavingTileableList) {
             if (
                 tileable instanceof MsWindow &&
-                Me.msWindowManager!.msWindowList.includes(tileable)
+                Me.msWindowManager.msWindowList.includes(tileable)
             ) {
                 this.restoreTileable(tileable);
             }
@@ -301,10 +301,10 @@ export class BaseTilingLayout<
         gap?: number
     ) {
         // Reduces box size according to gap setting
-        gap = gap || Me.layoutManager!.gap;
+        gap = gap || Me.layoutManager.gap;
         if (screenGap == undefined) {
-            screenGap = Me.layoutManager!.useScreenGap
-                ? Me.layoutManager!.screenGap
+            screenGap = Me.layoutManager.useScreenGap
+                ? Me.layoutManager.screenGap
                 : gap;
         }
 

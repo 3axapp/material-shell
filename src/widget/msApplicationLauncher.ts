@@ -46,7 +46,7 @@ export class MsApplicationLauncher extends St.Widget {
         );
         this.initAppListContainer();
         this.launcherChangedSignal = SignalHandle.connect(
-            Me.msThemeManager!,
+            Me.msThemeManager,
             'clock-app-launcher-changed',
             () => {
                 this.restartAppListContainer();
@@ -100,7 +100,7 @@ export class MsApplicationLauncher extends St.Widget {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
-                Me.msWindowManager!.openApp(app, this.msWorkspace);
+                Me.msWindowManager.openApp(app, this.msWorkspace);
                 this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);
@@ -185,7 +185,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.numberOfColumn = 1;
         this.maxIndex = 1;
 
-        if (Me.msThemeManager!.clockAppLauncher) {
+        if (Me.msThemeManager.clockAppLauncher) {
             const clockLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis margin-right-x2',
                 y_align: Clutter.ActorAlign.CENTER,
@@ -314,7 +314,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     get buttonSize() {
-        return Me.msThemeManager!.getScaledSize(BUTTON_SIZE);
+        return Me.msThemeManager.getScaledSize(BUTTON_SIZE);
     }
     reset() {
         //Go back to the previous window if ESC is pressed and nothing is selected
@@ -549,12 +549,12 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
-        const containerPadding = Me.msThemeManager!.getScaledSize(16);
-        const clockHeight = Me.msThemeManager!.getScaledSize(
-            Me.msThemeManager!.clockAppLauncher ? 64 : 0
+        const containerPadding = Me.msThemeManager.getScaledSize(16);
+        const clockHeight = Me.msThemeManager.getScaledSize(
+            Me.msThemeManager.clockAppLauncher ? 64 : 0
         );
-        const searchHeight = Me.msThemeManager!.getScaledSize(48);
-        const searchMargin = Me.msThemeManager!.getScaledSize(24);
+        const searchHeight = Me.msThemeManager.getScaledSize(48);
+        const searchMargin = Me.msThemeManager.getScaledSize(24);
 
         const availableWidth = contentBox.get_width() - containerPadding * 2;
 
@@ -697,7 +697,7 @@ export class MsApplicationButton extends MatButton {
             this.layout.add_child(this.icon);
             this.layout.add_child(this.title);
 
-            Me.tooltipManager!.add(this.title, { relativeActor: this });
+            Me.tooltipManager.add(this.title, { relativeActor: this });
         }
         this.layout.set_style('padding:12px;');
         this.set_child(this.layout);

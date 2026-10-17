@@ -177,7 +177,7 @@ export class MsWorkspaceManager extends MsManager {
         });
 
         this.observe(
-            Me.msWindowManager!.msFocusManager,
+            Me.msWindowManager.msFocusManager,
             'focus-changed',
             (_, msWindow) => {
                 if (msWindow && msWindow.msWorkspace) {
@@ -526,7 +526,7 @@ export class MsWorkspaceManager extends MsManager {
             this.stateChanged();
         });
         msWorkspace.connect('tiling-layout-changed', (_) => {
-            Me.stateManager!.stateChanged();
+            Me.stateManager.stateChanged();
         });
         msWorkspace.connect('readyToBeClosed', () => {
             const index = this.primaryMsWorkspaces.indexOf(msWorkspace);
@@ -570,7 +570,7 @@ export class MsWorkspaceManager extends MsManager {
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.workspaceTracker._checkWorkspaces();
-            Me.stateManager!.stateChanged();
+            Me.stateManager.stateChanged();
             this.stateChangedTriggered = false;
             return GLib.SOURCE_REMOVE;
         });
@@ -624,7 +624,7 @@ export class MsWorkspaceManager extends MsManager {
         const msWorkspace =
             currentMonitorIndex === Main.layoutManager.primaryIndex
                 ? this.primaryMsWorkspaces[activeWorkspaceIndex]
-                : Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
+                : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                       currentMonitorIndex
                   )[0];
         return msWorkspace;

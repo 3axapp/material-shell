@@ -322,7 +322,7 @@ export class MsWindow extends Clutter.Actor {
 
     set persistent(boolean: boolean) {
         this._persistent = boolean;
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
     }
 
     private trackAppChanges() {
@@ -410,7 +410,7 @@ export class MsWindow extends Clutter.Actor {
 
     get dragged() {
         return (
-            Me.msWindowManager!.msDndManager.dragInProgress?.msWindow === this
+            Me.msWindowManager.msDndManager.dragInProgress?.msWindow === this
         );
     }
 
@@ -1018,7 +1018,7 @@ export class MsWindow extends Clutter.Actor {
                 metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
             }
 
-            const workspace = Me.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
+            const workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
                 this.msWorkspace
             );
             if (workspace && metaWindow.get_workspace() != workspace) {
@@ -1128,7 +1128,7 @@ export class MsWindow extends Clutter.Actor {
     grab_key_focus(): void {
         // TODO: Seems a bit redundant to first focus the dialogs and then change focus to the main window (is that even desired?)
         this.focusDialogs();
-        if (!Me.msWindowManager!.msFocusManager.requestFocus(this)) return;
+        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
         if (this.metaWindow) {
             this.metaWindow.activate(global.get_current_time());
         } else {
@@ -1313,7 +1313,7 @@ export class MsWindow extends Clutter.Actor {
             const shouldBeHidden =
                 !this.visible ||
                 this.get_parent() === null ||
-                Me.msWindowManager!.msDndManager.dragInProgress;
+                Me.msWindowManager.msDndManager.dragInProgress;
             if (shouldBeHidden && !metaWindow.minimized) {
                 metaWindow.minimize();
             } else if (!shouldBeHidden && metaWindow.minimized) {

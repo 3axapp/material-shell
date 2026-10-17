@@ -14,14 +14,14 @@ export class MatPanelButton extends MatButton {
     constructor(params = {}) {
         super(params);
         this.add_style_class_name('mat-panel-button');
-        const panelSizeSignal = Me.msThemeManager!.connect(
+        const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => {
                 this.queue_relayout();
             }
         );
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(panelSizeSignal);
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
     }
 
@@ -33,8 +33,8 @@ export class MatPanelButton extends MatButton {
             global.stage
         );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 
@@ -46,8 +46,8 @@ export class MatPanelButton extends MatButton {
             global.stage
         );
         return [
-            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
-            Me.msThemeManager!.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 }
