@@ -28,7 +28,7 @@ type WorkspaceTrackerPrototype = WindowManager.WorkspaceTracker & {
     _oldCheckWorkspaces?: WindowManager.WorkspaceTracker['_checkWorkspaces'];
 };
 
-interface MsWorkspaceManagerState {
+export interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
     primaryWorkspaceActiveIndex: number;
 }
