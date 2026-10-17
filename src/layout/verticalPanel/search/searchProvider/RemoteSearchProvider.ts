@@ -121,7 +121,7 @@ export function loadRemoteSearchProviders(
 
             let version = '1';
             try {
-                version = keyfile.get_string(group, 'Version')!;
+                version = keyfile.get_string(group, 'Version') ?? version;
             } catch (_e) {
                 // ignore error
             }
@@ -176,15 +176,15 @@ export function loadRemoteSearchProviders(
     const enabled = searchSettings.get_strv('enabled');
 
     loadedProviders = loadedProviders.filter((provider) => {
-        const appId = provider.appInfo.get_id()!;
+        const appId = provider.id;
 
         if (provider.defaultEnabled) return !disabled.includes(appId);
         else return enabled.includes(appId);
     });
 
     loadedProviders.sort((providerA, providerB) => {
-        const appIdA = providerA.appInfo.get_id()!;
-        const appIdB = providerB.appInfo.get_id()!;
+        const appIdA = providerA.id;
+        const appIdB = providerB.id;
 
         const idxA = sortOrder.indexOf(appIdA);
         const idxB = sortOrder.indexOf(appIdB);
@@ -248,7 +248,7 @@ export class RemoteSearchProvider {
         this.proxy.init_async(GLib.PRIORITY_DEFAULT, null);
 
         this.appInfo = appInfo;
-        this.id = appInfo.get_id()!;
+        this.id = assertNotNull(appInfo.get_id());
     }
 
     createFallbackIcon(iconSize: number): St.Icon | null {
@@ -436,7 +436,7 @@ export class RemoteSearchProvider {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
         mslog(
-            `Search provider ${this.appInfo.get_id()!} does not implement LaunchSearch`
+            `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
     }

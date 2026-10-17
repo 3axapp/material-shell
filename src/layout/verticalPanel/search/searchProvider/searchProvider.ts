@@ -23,7 +23,7 @@ export interface UnpackedMeta {
 
 export interface ResultMeta {
     id: string;
-    name: string;
+    name: string | null;
     createIcon: (size: number) => St.Icon | null;
     description?: string;
     clipboardText?: string;

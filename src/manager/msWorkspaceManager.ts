@@ -359,7 +359,7 @@ export class MsWorkspaceManager extends MsManager {
 
         for (let i = 0; i < windows.length; i++) {
             const actor = windows[i];
-            const win = actor.get_meta_window()!;
+            const win = assertNotNull(actor.get_meta_window());
 
             if (win.is_on_all_workspaces()) continue;
 
