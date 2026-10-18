@@ -8,6 +8,7 @@
  *   MSTEST-Message: …: DONE failed=<n>
  */
 
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -102,6 +103,119 @@ function describeMenu(menu) {
     };
     collect(menu);
     return labels.slice(0, 3).join(' / ') || menu.toString();
+}
+
+function callMutter(path, iface, method, args) {
+    return new Promise((resolve, reject) => {
+        Gio.DBus.session.call(
+            'org.gnome.Mutter.ScreenCast',
+            path,
+            `org.gnome.Mutter.ScreenCast${iface}`,
+            method,
+            args,
+            null,
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null,
+            (connection, result) => {
+                try {
+                    resolve(connection.call_finish(result).deep_unpack());
+                } catch (error) {
+                    reject(error);
+                }
+            }
+        );
+    });
+}
+
+/** Resolves to the id of the PipeWire node Mutter creates for `stream`. */
+function waitForStreamNode(stream) {
+    return new Promise((resolve, reject) => {
+        const timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => {
+            Gio.DBus.session.signal_unsubscribe(id);
+            reject(
+                new Error(
+                    'Mutter created no PipeWire stream, is PipeWire running?'
+                )
+            );
+            return GLib.SOURCE_REMOVE;
+        });
+        const id = Gio.DBus.session.signal_subscribe(
+            'org.gnome.Mutter.ScreenCast',
+            'org.gnome.Mutter.ScreenCast.Stream',
+            'PipeWireStreamAdded',
+            stream,
+            null,
+            Gio.DBusSignalFlags.NONE,
+            (_connection, _sender, _path, _iface, _signal, parameters) => {
+                GLib.source_remove(timeoutId);
+                Gio.DBus.session.signal_unsubscribe(id);
+                resolve(parameters.deep_unpack()[0]);
+            }
+        );
+    });
+}
+
+/** pipewiresrc finds a node by its serial, Mutter only tells its id. */
+function nodeSerial(id) {
+    const dump = Gio.Subprocess.new(
+        ['pw-dump', `${id}`],
+        Gio.SubprocessFlags.STDOUT_PIPE
+    );
+    return new Promise((resolve, reject) => {
+        dump.communicate_utf8_async(null, null, (_dump, result) => {
+            try {
+                const [, stdout] = dump.communicate_utf8_finish(result);
+                // Objects whose serial equals the id come out too.
+                const node = JSON.parse(stdout).find((o) => o.id === id);
+                resolve(node.info.props['object.serial']);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    });
+}
+
+/**
+ * Plugs in a 1280×800 virtual monitor and resolves to a function that unplugs
+ * it. Mutter creates the monitor only once something consumes the PipeWire
+ * stream behind it, and sizes it after what the consumer asks for, so a
+ * GStreamer pipeline reads the stream. Both go away with the shell: the
+ * session is the shell's own, and the pipeline stops once its stream is gone.
+ */
+export async function plugMonitor() {
+    const noProperties = new GLib.Variant('(a{sv})', [{}]);
+    const [session] = await callMutter(
+        '/org/gnome/Mutter/ScreenCast',
+        '',
+        'CreateSession',
+        noProperties
+    );
+    const [stream] = await callMutter(
+        session,
+        '.Session',
+        'RecordVirtual',
+        noProperties
+    );
+    const nodeAdded = waitForStreamNode(stream);
+    await callMutter(session, '.Session', 'Start', null);
+    const serial = await nodeSerial(await nodeAdded);
+    Gio.Subprocess.new(
+        [
+            'gst-launch-1.0',
+            '-q',
+            'pipewiresrc',
+            `target-object=${serial}`,
+            // Without a media type WirePlumber won't link it to a video stream.
+            'stream-properties=props,media.type=Video,media.category=Capture',
+            '!',
+            'video/x-raw,width=1280,height=800',
+            '!',
+            'fakesink',
+        ],
+        Gio.SubprocessFlags.NONE
+    );
+    return () => callMutter(session, '.Session', 'Stop', null);
 }
 
 let failures = 0;

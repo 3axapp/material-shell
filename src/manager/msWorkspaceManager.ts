@@ -72,6 +72,10 @@ export class MsWorkspaceManager extends MsManager {
             Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces;
         Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces =
             function () {
+                if (!Main.layoutManager.primaryMonitor) {
+                    this._checkWorkspacesId = 0;
+                    return false;
+                }
                 const workspaceManager = global.workspace_manager;
                 let i;
                 const emptyWorkspaces: boolean[] = [];
@@ -396,9 +400,12 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     onMonitorsChanged(): void {
-        this._updatingMonitors = true;
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
+        if (!Main.layoutManager.primaryMonitor) {
+            return;
+        }
+        this._updatingMonitors = true;
         // First manage external screen
         const externalMonitors: Monitor[] = Main.layoutManager.monitors.filter(
             (monitor: Monitor) => monitor != Main.layoutManager.primaryMonitor
