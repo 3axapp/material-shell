@@ -57,11 +57,15 @@ export class MsWorkspaceCategory {
         const appList = this.msWorkspace.msWindowList.map((msWindow) => {
             return msWindow.app;
         });
-        if (!appList.length) return null;
+        if (!appList.length) {
+            return null;
+        }
         const categoryScoreMap = new Map();
 
         appList.forEach((app) => {
-            if (app.is_window_backed()) return;
+            if (app.is_window_backed()) {
+                return;
+            }
             const appMainCategories: string[] = [];
             let multiplier = 1;
             const categoriesString = app.get_app_info().get_categories();
@@ -90,8 +94,12 @@ export class MsWorkspaceCategory {
         });
         let mostRatedCategoryEntry: [string, number] | null = null;
         for (const entry of categoryScoreMap.entries()) {
-            if (!mostRatedCategoryEntry || entry[1] > mostRatedCategoryEntry[1])
+            if (
+                !mostRatedCategoryEntry ||
+                entry[1] > mostRatedCategoryEntry[1]
+            ) {
                 mostRatedCategoryEntry = entry;
+            }
 
             if (
                 entry[1] === mostRatedCategoryEntry[1] &&
@@ -101,7 +109,9 @@ export class MsWorkspaceCategory {
                 mostRatedCategoryEntry = entry;
             }
         }
-        if (!mostRatedCategoryEntry) return null;
+        if (!mostRatedCategoryEntry) {
+            return null;
+        }
         return mostRatedCategoryEntry[0];
     }
 }

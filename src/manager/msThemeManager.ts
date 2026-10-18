@@ -89,7 +89,9 @@ export class MsThemeManager extends MsManager {
         let displayedCursor: Clutter.CursorType = this.cursorType;
         this.throttledStageSetCursorType = throttle(
             () => {
-                if (displayedCursor == this.cursorType) return;
+                if (displayedCursor == this.cursorType) {
+                    return;
+                }
                 displayedCursor = this.cursorType;
                 // Since GNOME 50 the cursor is a property of an actor rather
                 // than global state on the display, so set it on the stage.

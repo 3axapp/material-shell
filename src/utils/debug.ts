@@ -52,7 +52,9 @@ export class Debug {
     }
 
     static log(...args: unknown[]) {
-        if (!DEBUG || FOCUS_ONLY) return;
+        if (!DEBUG || FOCUS_ONLY) {
+            return;
+        }
         const fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';
 
@@ -60,7 +62,9 @@ export class Debug {
     }
 
     static logFocus(...args: unknown[]) {
-        if (!DEBUG) return;
+        if (!DEBUG) {
+            return;
+        }
         const fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';
 
@@ -93,9 +97,13 @@ export class Debug {
     }
 
     addLogToFunctions(prototype: LoggedPrototype) {
-        if (!DEBUG) return;
+        if (!DEBUG) {
+            return;
+        }
         for (const key of Object.getOwnPropertyNames(prototype)) {
-            if (key === 'constructor') continue;
+            if (key === 'constructor') {
+                continue;
+            }
             const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
             if (descriptor) {
                 const value = descriptor.value;

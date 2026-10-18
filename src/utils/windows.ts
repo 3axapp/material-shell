@@ -26,7 +26,9 @@ export const setTitleBarVisibility = function (
     const windowXID = getWindowXID(metaWindow);
     // Meta.Window.is_client_decorated() is gone; `decorated` already excludes
     // the client side decorated windows this used to filter out.
-    if (!windowXID || !metaWindow.decorated) return;
+    if (!windowXID || !metaWindow.decorated) {
+        return;
+    }
     try {
         Util.trySpawn([
             'xprop',

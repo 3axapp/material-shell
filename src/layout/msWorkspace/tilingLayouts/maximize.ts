@@ -32,7 +32,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     }
 
     displayTileable(actor: Tileable) {
-        if (this.translationHelper.animationInProgress) return;
+        if (this.translationHelper.animationInProgress) {
+            return;
+        }
         if (this.currentDisplayed) {
             if (
                 logAssert(
@@ -59,7 +61,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         };
 
         reparentActor(actor, this.tileableContainer);
-        if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
+        if (this.msWorkspace.isDisplayed()) {
+            actor.grab_key_focus();
+        }
     }
 
     showAppLauncher() {

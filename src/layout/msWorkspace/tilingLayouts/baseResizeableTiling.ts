@@ -281,7 +281,9 @@ export class BaseResizeableTilingLayout<
     }
 
     addUnFocusEffect(tileable: Tileable, effect: number, focused: boolean) {
-        if (!tileable || tileable.focusEffects) return;
+        if (!tileable || tileable.focusEffects) {
+            return;
+        }
         if (effect === FocusEffectEnum.DEFAULT) {
             const dimmer = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
@@ -317,7 +319,9 @@ export class BaseResizeableTilingLayout<
     }
 
     removeUnFocusEffect(tileable: Tileable, effect: number) {
-        if (!tileable || !tileable.focusEffects) return;
+        if (!tileable || !tileable.focusEffects) {
+            return;
+        }
         tileable.remove_all_transitions();
         if (effect === FocusEffectEnum.DEFAULT) {
             assert(
@@ -336,7 +340,9 @@ export class BaseResizeableTilingLayout<
     }
 
     setUnFocusEffect(tileable: Tileable, effect: number, focused: boolean) {
-        if (!tileable) return;
+        if (!tileable) {
+            return;
+        }
         if (effect === FocusEffectEnum.DEFAULT) {
             if (!focused) {
                 this.addUnFocusEffect(tileable, effect, !focused);

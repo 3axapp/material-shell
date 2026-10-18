@@ -29,7 +29,9 @@ import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/paren
 
 function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
-    if (searchString === '') return [];
+    if (searchString === '') {
+        return [];
+    }
     return searchString.split(/\s+/);
 }
 const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
@@ -194,8 +196,9 @@ export class SearchResultList extends St.BoxLayout {
         if (
             provider instanceof RemoteSearchProvider &&
             !this.parentalControlsManager.shouldShowApp(provider.appInfo)
-        )
+        ) {
             return;
+        }
 
         this.providerList.push(provider);
         const providerDisplay = new ProviderResultList(provider, (id) => {
@@ -257,7 +260,9 @@ export class SearchResultList extends St.BoxLayout {
 
     onTextChanged(): void {
         const terms = getTermsForSearchString(this.searchEntry.get_text());
-        if (terms == this.terms) return;
+        if (terms == this.terms) {
+            return;
+        }
         const searchActive = terms.length > 0;
         this.setTerms(terms);
 
@@ -322,8 +327,9 @@ export class SearchResultList extends St.BoxLayout {
         const resultsMetas = await provider
             .getResultMetas(results, this.cancellable)
             .catch(logAsyncException);
-        if (resultsMetas !== undefined)
+        if (resultsMetas !== undefined) {
             this.updateResults(provider, resultsMetas);
+        }
     }
 
     private async doSearch() {
@@ -366,7 +372,9 @@ export class SearchResultList extends St.BoxLayout {
         // text and one for the new one - the second one is handled
         // incorrectly when we remove focus
         // (https://bugzilla.gnome.org/show_bug.cgi?id=636341) */
-        if (this.text.text !== '') this.reset();
+        if (this.text.text !== '') {
+            this.reset();
+        }
     }
 
     setTerms(terms: string[]): void {
@@ -378,7 +386,9 @@ export class SearchResultList extends St.BoxLayout {
         // search while the previous search is still active.
         const searchString = terms.join(' ');
         const previousSearchString = this.terms.join(' ');
-        if (searchString == previousSearchString) return;
+        if (searchString == previousSearchString) {
+            return;
+        }
         this.startingSearch = true;
 
         this.cancellable.cancel();
@@ -390,24 +400,28 @@ export class SearchResultList extends St.BoxLayout {
         }
 
         let isSubSearch = false;
-        if (this.terms.length > 0)
+        if (this.terms.length > 0) {
             isSubSearch = searchString.indexOf(previousSearchString) == 0;
+        }
 
         this.terms = terms;
         this.isSubSearch = isSubSearch;
 
-        if (this.searchTimeoutId == 0)
+        if (this.searchTimeoutId == 0) {
             this.searchTimeoutId = Async.addTimeout(
                 GLib.PRIORITY_DEFAULT,
                 150,
                 this.onSearchTimeout.bind(this)
             );
+        }
     }
 
     updateResults(provider: ReactiveSearchProvider, results: ResultMeta[]) {
         const terms = this.terms;
         const display = this.providerDisplayMap.get(provider);
-        if (!display) return;
+        if (!display) {
+            return;
+        }
 
         display
             .updateSearch(results, terms)

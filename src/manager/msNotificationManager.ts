@@ -24,7 +24,9 @@ export class MsNotificationManager extends MsManager {
         this.httpSession = new Soup.Session();
     }
     check() {
-        if (getSettings('tweaks').get_boolean('disable-notifications')) return;
+        if (getSettings('tweaks').get_boolean('disable-notifications')) {
+            return;
+        }
         let uuid = Me.stateManager.getState('notification-uuid');
         if (!uuid) {
             uuid = GLib.uuid_string_random();

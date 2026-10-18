@@ -27,7 +27,9 @@ run(async () => {
         const panel = global.ms.layout.panel;
         return global.ms.loaded && panel.visible && panel.mapped;
     }, 15000);
-    if (!check('interface built', built)) return;
+    if (!check('interface built', built)) {
+        return;
+    }
     await wait(1000);
 
     const msWorkspaceManager = global.ms.msWorkspaceManager;
@@ -42,7 +44,9 @@ run(async () => {
         () => msWorkspaceManager.primaryMsWorkspaces.length > before,
         15000
     );
-    if (!check('a window opens a new workspace', created)) return;
+    if (!check('a window opens a new workspace', created)) {
+        return;
+    }
     // Let the shell settle and the menu checks run.
     await wait(1000);
 
@@ -52,8 +56,9 @@ run(async () => {
             menus.added > menus.destroyed,
             'no menu stayed in uiGroup, so this run proves nothing'
         )
-    )
+    ) {
         return;
+    }
     check(
         'no closed menu on screen on new workspace',
         menus.shown.length === 0,

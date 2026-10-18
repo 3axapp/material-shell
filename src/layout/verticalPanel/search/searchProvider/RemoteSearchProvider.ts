@@ -92,7 +92,9 @@ export function loadRemoteSearchProviders(
             return;
         }
 
-        if (!keyfile.has_group(KEY_FILE_GROUP)) return;
+        if (!keyfile.has_group(KEY_FILE_GROUP)) {
+            return;
+        }
 
         let remoteProvider;
         try {
@@ -100,13 +102,17 @@ export function loadRemoteSearchProviders(
             const busName = keyfile.get_string(group, 'BusName');
             const objectPath = keyfile.get_string(group, 'ObjectPath');
 
-            if (objectPaths[objectPath]) return;
+            if (objectPaths[objectPath]) {
+                return;
+            }
 
             let appInfo = null;
             try {
                 const desktopId = keyfile.get_string(group, 'DesktopId');
                 appInfo = GioUnix.DesktopAppInfo.new(desktopId);
-                if (!appInfo.should_show()) return;
+                if (!appInfo.should_show()) {
+                    return;
+                }
             } catch (_e) {
                 log(`Ignoring search provider ${path}: missing DesktopId`);
                 return;
@@ -126,20 +132,21 @@ export function loadRemoteSearchProviders(
                 // ignore error
             }
 
-            if (parseInt(version) >= 2)
+            if (parseInt(version) >= 2) {
                 remoteProvider = new RemoteSearchProvider2(
                     appInfo,
                     busName,
                     objectPath,
                     autoStart
                 );
-            else
+            } else {
                 remoteProvider = new RemoteSearchProvider(
                     appInfo,
                     busName,
                     objectPath,
                     autoStart
                 );
+            }
 
             remoteProvider.defaultEnabled = true;
             try {
@@ -158,7 +165,9 @@ export function loadRemoteSearchProviders(
         }
     }
 
-    if (searchSettings.get_boolean('disable-external')) return [];
+    if (searchSettings.get_boolean('disable-external')) {
+        return [];
+    }
 
     for (const provider of FileUtils.collectFromDatadirs(
         'search-providers',
@@ -178,8 +187,11 @@ export function loadRemoteSearchProviders(
     loadedProviders = loadedProviders.filter((provider) => {
         const appId = provider.id;
 
-        if (provider.defaultEnabled) return !disabled.includes(appId);
-        else return enabled.includes(appId);
+        if (provider.defaultEnabled) {
+            return !disabled.includes(appId);
+        } else {
+            return enabled.includes(appId);
+        }
     });
 
     loadedProviders.sort((providerA, providerB) => {
@@ -198,10 +210,14 @@ export function loadRemoteSearchProviders(
         }
 
         // if providerA isn't found, it's sorted after providerB
-        if (idxA == -1) return 1;
+        if (idxA == -1) {
+            return 1;
+        }
 
         // if providerB isn't found, it's sorted after providerA
-        if (idxB == -1) return -1;
+        if (idxB == -1) {
+            return -1;
+        }
 
         // finally, if both providers are found, return their order in the list
         return idxA - idxB;
@@ -230,12 +246,16 @@ export class RemoteSearchProvider {
         autoStart: boolean,
         proxyInfo?: Gio.DBusInterfaceInfo
     ) {
-        if (!proxyInfo) proxyInfo = SearchProviderProxyInfo;
+        if (!proxyInfo) {
+            proxyInfo = SearchProviderProxyInfo;
+        }
 
         let gFlags = Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES;
-        if (autoStart)
+        if (autoStart) {
             gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION;
-        else gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START;
+        } else {
+            gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START;
+        }
 
         this.proxy = new Gio.DBusProxy({
             g_bus_type: Gio.BusType.SESSION,
@@ -287,12 +307,16 @@ export class RemoteSearchProvider {
             );
         }
 
-        if (gicon) icon = new St.Icon({ gicon, icon_size: size });
+        if (gicon) {
+            icon = new St.Icon({ gicon, icon_size: size });
+        }
         return icon;
     }
 
     filterResults(results: string[], maxNumber: number) {
-        if (results.length <= maxNumber) return results;
+        if (results.length <= maxNumber) {
+            return results;
+        }
 
         const regularResults = results.filter((r) => !r.startsWith('special:'));
         const specialResults = results.filter((r) => r.startsWith('special:'));
@@ -309,8 +333,11 @@ export class RemoteSearchProvider {
                       this.proxy.GetInitialResultSetRemote(
                           terms,
                           (results: [string[]], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
@@ -323,10 +350,11 @@ export class RemoteSearchProvider {
                     Gio.IOErrorEnum,
                     Gio.IOErrorEnum.CANCELLED
                 )
-            )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
+            }
             return [];
         }
     }
@@ -343,8 +371,11 @@ export class RemoteSearchProvider {
                           previousResults,
                           newTerms,
                           (results: [string[]], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
@@ -361,10 +392,11 @@ export class RemoteSearchProvider {
                     Gio.IOErrorEnum,
                     Gio.IOErrorEnum.CANCELLED
                 )
-            )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
+            }
             return [];
         }
     }
@@ -377,8 +409,11 @@ export class RemoteSearchProvider {
                       this.proxy.GetResultMetasRemote(
                           ids,
                           (results: [RawMeta[]], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
@@ -390,10 +425,11 @@ export class RemoteSearchProvider {
                     Gio.IOErrorEnum,
                     Gio.IOErrorEnum.CANCELLED
                 )
-            )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id} during GetResultMetas: ${error}`
                 );
+            }
             return [];
         }
 
@@ -403,9 +439,11 @@ export class RemoteSearchProvider {
             const unpackedMeta: UnpackedMeta = {};
             for (const prop in rawMeta) {
                 // we can use the serialized icon variant directly
-                if (prop !== 'icon')
+                if (prop !== 'icon') {
                     unpackedMeta[prop] = rawMeta[prop].deepUnpack();
-                else unpackedMeta[prop] = rawMeta[prop];
+                } else {
+                    unpackedMeta[prop] = rawMeta[prop];
+                }
             }
 
             resultMetas.push({

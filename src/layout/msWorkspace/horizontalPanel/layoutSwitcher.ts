@@ -132,8 +132,9 @@ export class LayoutSwitcher extends St.BoxLayout {
             this.msWorkspace.state.layoutStateList.find(
                 (layoutState) => layoutState.key === layoutKey
             ) != null
-        )
+        ) {
             return true;
+        }
 
         // Add the layout in the right order
         const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
@@ -156,13 +157,16 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     removeLayout(layoutKey: string) {
-        if (this.msWorkspace.state.layoutStateList.length === 1) return false;
+        if (this.msWorkspace.state.layoutStateList.length === 1) {
+            return false;
+        }
         if (
             this.msWorkspace.state.layoutStateList.find(
                 (layoutState) => layoutState.key === layoutKey
             ) === null
-        )
+        ) {
             return true;
+        }
         const index = this.msWorkspace.state.layoutStateList.findIndex(
             (layoutState) => layoutState.key === layoutKey
         );

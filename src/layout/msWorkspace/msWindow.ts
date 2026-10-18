@@ -280,7 +280,9 @@ export class MsWindow extends Clutter.Actor {
 
     get metaWindow(): MetaWindowWithMsProperties | null {
         const state = this.lifecycleState;
-        if (state.type !== 'window') return null;
+        if (state.type !== 'window') {
+            return null;
+        }
 
         return (
             state.metaWindow ||
@@ -296,10 +298,14 @@ export class MsWindow extends Clutter.Actor {
      */
     get metaWindows(): MetaWindowWithMsProperties[] {
         const state = this.lifecycleState;
-        if (state.type !== 'window') return [];
+        if (state.type !== 'window') {
+            return [];
+        }
 
         const windows = state.dialogs.map((d) => d.metaWindow);
-        if (state.metaWindow !== null) windows.push(state.metaWindow);
+        if (state.metaWindow !== null) {
+            windows.push(state.metaWindow);
+        }
         return windows;
     }
 
@@ -316,7 +322,9 @@ export class MsWindow extends Clutter.Actor {
     }
 
     get title() {
-        if (!this.app) return '';
+        if (!this.app) {
+            return '';
+        }
         const metaWindow = this.metaWindow;
         return metaWindow ? metaWindow.get_title() : this.app.get_name();
     }
@@ -416,7 +424,9 @@ export class MsWindow extends Clutter.Actor {
     }
 
     get followMetaWindow() {
-        if (!this.msWorkspace) return false;
+        if (!this.msWorkspace) {
+            return false;
+        }
         return (
             (this.msWorkspace &&
                 this.msWorkspace.layout.state.key === 'float') ||
@@ -505,12 +515,16 @@ export class MsWindow extends Clutter.Actor {
     }
 
     override set_position(x: number, y: number) {
-        if (this.followMetaWindow) return;
+        if (this.followMetaWindow) {
+            return;
+        }
         super.set_position(x, y);
     }
 
     override set_size(width: number, height: number) {
-        if (this.followMetaWindow) return;
+        if (this.followMetaWindow) {
+            return;
+        }
         super.set_size(width, height);
     }
 
@@ -565,7 +579,9 @@ export class MsWindow extends Clutter.Actor {
 
     private updateMetaWindowPositionAndSizeInternal() {
         const state = this.lifecycleState;
-        if (state.type !== 'window') return;
+        if (state.type !== 'window') {
+            return;
+        }
         const metaWindow = state.metaWindow;
         const windowActor =
             metaWindow &&
@@ -819,7 +835,9 @@ export class MsWindow extends Clutter.Actor {
 
     mimicMetaWindowPositionAndSize() {
         const metaWindow = this.metaWindow;
-        if (!metaWindow || this.dragged) return;
+        if (!metaWindow || this.dragged) {
+            return;
+        }
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             metaWindow.get_monitor()
         );
@@ -847,7 +865,9 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeDialogs() {
-        if (this.lifecycleState.type !== 'window') return;
+        if (this.lifecycleState.type !== 'window') {
+            return;
+        }
         this.lifecycleState.dialogs.forEach((dialog) => {
             const { metaWindow } = dialog;
             const frame = metaWindow.get_frame_rect();
@@ -938,7 +958,9 @@ export class MsWindow extends Clutter.Actor {
 
     unregisterOnMetaWindowSignals() {
         const state = this.lifecycleState;
-        if (state.type !== 'window' || state.metaWindow === null) return;
+        if (state.type !== 'window' || state.metaWindow === null) {
+            return;
+        }
         for (const signalId of state.metaWindowSignals) {
             state.metaWindow.disconnect(signalId);
         }
@@ -990,15 +1012,17 @@ export class MsWindow extends Clutter.Actor {
         if (
             this.lifecycleState !== state ||
             this.lifecycleState.metaWindow !== metaWindow
-        )
+        ) {
             return;
+        }
 
         await this.onMetaWindowFirstFrameDrawn(metaWindow);
         if (
             this.lifecycleState !== state ||
             this.lifecycleState.metaWindow !== metaWindow
-        )
+        ) {
             return;
+        }
 
         this.updateWorkspaceAndMonitor(metaWindow);
         this.windowClone.set_source(
@@ -1144,7 +1168,9 @@ export class MsWindow extends Clutter.Actor {
     grab_key_focus(): void {
         // TODO: Seems a bit redundant to first focus the dialogs and then change focus to the main window (is that even desired?)
         this.focusDialogs();
-        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
+        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) {
+            return;
+        }
         if (this.metaWindow) {
             this.metaWindow.activate(global.get_current_time());
         } else {
@@ -1351,9 +1377,15 @@ export class MsWindow extends Clutter.Actor {
     }
 
     _onDestroy() {
-        if (this.destroyId) this.disconnect(this.destroyId);
-        if (this.appSignalId) this.app.disconnect(this.appSignalId);
-        if (this.placeholder.get_parent() === null) this.placeholder.destroy();
+        if (this.destroyId) {
+            this.disconnect(this.destroyId);
+        }
+        if (this.appSignalId) {
+            this.app.disconnect(this.appSignalId);
+        }
+        if (this.placeholder.get_parent() === null) {
+            this.placeholder.destroy();
+        }
         this.unregisterOnMetaWindowSignals();
         this.cancelDeferred();
         this.lifecycleState = { type: 'destroyed' };

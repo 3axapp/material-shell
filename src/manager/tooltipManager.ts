@@ -68,7 +68,9 @@ export class TooltipManager extends MsManager {
                 actorText = clutterText.get_text();
             }
         }
-        if (actorText) params.text = actorText;
+        if (actorText) {
+            params.text = actorText;
+        }
 
         if (!params.text) {
             return;

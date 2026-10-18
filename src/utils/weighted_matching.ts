@@ -22,7 +22,9 @@ export function weightedMatching(costs: number[][]): {
 } {
     const INT_MAX = 2147483647;
 
-    if (costs.length == 0) return { cost: 0, assignments: new Int32Array() };
+    if (costs.length == 0) {
+        return { cost: 0, assignments: new Int32Array() };
+    }
     const n = costs.length + 1;
     const m = costs[0].length + 1;
     if (n > m) {

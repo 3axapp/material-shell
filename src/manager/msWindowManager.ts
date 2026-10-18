@@ -258,7 +258,9 @@ export class MsWindowManager extends MsManager {
 
         let logged = false;
         const logInfoOnce = () => {
-            if (logged) return;
+            if (logged) {
+                return;
+            }
             logged = true;
             for (const windowActor of actors) {
                 Debug.log(
@@ -420,9 +422,15 @@ export class MsWindowManager extends MsManager {
         const assignedMetaWindows = new Set(this.managedMetaWindows);
 
         for (const windowActor of actors) {
-            if (windowActor.is_destroyed()) continue;
-            if (assignedMetaWindows.has(metaWindowOf(windowActor))) continue;
-            if (!this.isMetaWindowDialog(metaWindowOf(windowActor))) continue;
+            if (windowActor.is_destroyed()) {
+                continue;
+            }
+            if (assignedMetaWindows.has(metaWindowOf(windowActor))) {
+                continue;
+            }
+            if (!this.isMetaWindowDialog(metaWindowOf(windowActor))) {
+                continue;
+            }
 
             const metaWindow = metaWindowOf(windowActor);
             const app = this.windowTracker.get_window_app(
@@ -560,7 +568,9 @@ export class MsWindowManager extends MsManager {
     }
 
     onNewMetaWindow(metaWindow: MetaWindowWithMsProperties) {
-        if (Me.instance.disableInProgress) return;
+        if (Me.instance.disableInProgress) {
+            return;
+        }
         metaWindow.createdAt = metaWindow.user_time;
         const actor = metaWindow.get_compositor_private() as Meta.WindowActor;
 
@@ -570,14 +580,18 @@ export class MsWindowManager extends MsManager {
                 >()); */
             const parent = actor.get_parent();
             if (parent != global.top_window_group) {
-                if (parent !== null) parent.remove_child(actor);
+                if (parent !== null) {
+                    parent.remove_child(actor);
+                }
                 global.top_window_group.add_child(actor);
             }
 
             return;
         }
 
-        if (metaWindow.handledByMaterialShell) return;
+        if (metaWindow.handledByMaterialShell) {
+            return;
+        }
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
@@ -590,7 +604,9 @@ export class MsWindowManager extends MsManager {
     }
 
     onMetaWindowUnManaged(metaWindow: MetaWindowWithMsProperties) {
-        if (Me.instance.disableInProgress || Me.instance.closing) return;
+        if (Me.instance.disableInProgress || Me.instance.closing) {
+            return;
+        }
         if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
             msWindow.metaWindowUnManaged(metaWindow);
@@ -856,8 +872,9 @@ export class MsWindowManager extends MsManager {
             const metaWindow = metaWindowOf(
                 windowActor
             ) as MetaWindowWithMsProperties;
-            if (metaWindow.handledByMaterialShell)
+            if (metaWindow.handledByMaterialShell) {
                 delete metaWindow.handledByMaterialShell;
+            }
         });
     }
 }

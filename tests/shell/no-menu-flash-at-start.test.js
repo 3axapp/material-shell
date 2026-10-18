@@ -13,7 +13,9 @@ run(async () => {
         const panel = global.ms.layout.panel;
         return global.ms.loaded && panel.visible && panel.mapped;
     }, 15000);
-    if (!check('interface built', built)) return;
+    if (!check('interface built', built)) {
+        return;
+    }
 
     // Let the shell settle and the menu checks run.
     await wait(1000);
@@ -24,8 +26,9 @@ run(async () => {
             menus.added > 0,
             'no menu reached uiGroup, so this run proves nothing'
         )
-    )
+    ) {
         return;
+    }
     check(
         'no closed menu on screen at start',
         menus.shown.length === 0,

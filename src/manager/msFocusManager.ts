@@ -42,7 +42,9 @@ export class MsFocusManager extends MsManager {
             global.workspace_manager,
             'active-workspace-changed',
             () => {
-                if (!Me.instance.loaded) return;
+                if (!Me.instance.loaded) {
+                    return;
+                }
                 this.focusProtected = true;
                 Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
@@ -101,7 +103,9 @@ export class MsFocusManager extends MsManager {
         const windowFocus =
             global.display.get_focus_window() as MetaWindowWithMsProperties;
 
-        if (!windowFocus || !windowFocus.msWindow) return;
+        if (!windowFocus || !windowFocus.msWindow) {
+            return;
+        }
 
         const msWindow = windowFocus.msWindow;
         msWindow.focusDialogs();
@@ -124,7 +128,9 @@ export class MsFocusManager extends MsManager {
     }
 
     setFocusToMsWindow(msWindow: MsWindow): void {
-        if (msWindow === this.lastMsWindowFocused) return;
+        if (msWindow === this.lastMsWindowFocused) {
+            return;
+        }
         this.lastMsWindowFocused = msWindow;
         this.emit('focus-changed', msWindow);
     }

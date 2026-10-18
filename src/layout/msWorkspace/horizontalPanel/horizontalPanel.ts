@@ -113,7 +113,9 @@ export class HorizontalPanel extends St.BoxLayout {
     }
 
     removeClock() {
-        if (!this.clockBin) return;
+        if (!this.clockBin) {
+            return;
+        }
         this.remove_child(this.clockBin);
         this.clockBin.destroy();
         this.clockBin = null;

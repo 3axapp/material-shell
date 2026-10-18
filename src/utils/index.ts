@@ -69,12 +69,16 @@ export function throttle<T extends unknown[], R, C>(
         timeout = null;
         assert(call !== null, 'unreachable');
         result = func.apply(call.context, call.args);
-        if (!timeout) call = null;
+        if (!timeout) {
+            call = null;
+        }
         return false;
     };
     return function (this: C, ...params: T) {
         const now = Date.now();
-        if (!previous && definedOptions.leading === false) previous = now;
+        if (!previous && definedOptions.leading === false) {
+            previous = now;
+        }
         const remaining = wait - (now - previous);
         call = { context: this, args: params };
         if (remaining <= 0 || remaining > wait) {
@@ -84,7 +88,9 @@ export function throttle<T extends unknown[], R, C>(
             }
             previous = now;
             result = func.apply(call.context, call.args);
-            if (!timeout) call = null;
+            if (!timeout) {
+                call = null;
+            }
         } else if (!timeout && definedOptions.trailing !== false) {
             timeout = Async.addTimeout(GLib.PRIORITY_DEFAULT, remaining, later);
         }
@@ -102,7 +108,9 @@ export const isParentOfActor = (
     let parentOfActor: Clutter.Actor | null = actor;
 
     while (parentOfActor !== null) {
-        if (parentOfActor === parent) return true;
+        if (parentOfActor === parent) {
+            return true;
+        }
         parentOfActor = parentOfActor.get_parent();
     }
     return false;
@@ -113,11 +121,15 @@ export const reparentActor = (
     parent: Clutter.Actor | null,
     first = false
 ) => {
-    if (!actor || !parent) return;
+    if (!actor || !parent) {
+        return;
+    }
 
     const currentParent = actor.get_parent();
 
-    if (currentParent === parent) return;
+    if (currentParent === parent) {
+        return;
+    }
 
     Me.instance.reparentInProgress = true;
     const keyFocus = global.stage.key_focus;

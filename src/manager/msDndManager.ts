@@ -126,7 +126,9 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((msWindow) => {
             if (!this.signalMap.has(msWindow)) {
                 const id = msWindow.connect('event', (_, event) => {
-                    if (this.dragInProgress) return;
+                    if (this.dragInProgress) {
+                        return;
+                    }
                     switch (event.type()) {
                         case Clutter.EventType.MOTION:
                             if ((event.get_state() as number) === 320) {
@@ -193,7 +195,9 @@ export class MsDndManager extends MsManager {
     }
 
     checkUnderThePointerRoutine() {
-        if (this.dragInProgress === null) return;
+        if (this.dragInProgress === null) {
+            return;
+        }
         this.throttledCheckUnderPointer();
         Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();

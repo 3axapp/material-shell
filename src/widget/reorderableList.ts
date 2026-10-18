@@ -72,9 +72,13 @@ export class ReorderableList extends Clutter.Actor {
         this.classAccepted = classAccepted;
         this.dragInProgress = false;
         this.connect('child-added', (_, child) => {
-            if (child === this.placeHolder) return;
+            if (child === this.placeHolder) {
+                return;
+            }
             const actor = child as DraggableActor;
-            if (!actor._draggable) this.makeActorDraggable(actor);
+            if (!actor._draggable) {
+                this.makeActorDraggable(actor);
+            }
         });
 
         this.placeHolder = new DropPlaceholder();
@@ -100,8 +104,9 @@ export class ReorderableList extends Clutter.Actor {
                 this.foreignEntered(source);
             }
             if (source === this.draggedActor || isForeignActor) {
-                if (actor.draggable != undefined && actor.draggable === false)
+                if (actor.draggable != undefined && actor.draggable === false) {
                     return DND.DragMotionResult.NO_DROP;
+                }
 
                 const actorIndex = this.get_children()
                     .filter((actor) => actor != this.placeHolder)
@@ -165,8 +170,9 @@ export class ReorderableList extends Clutter.Actor {
             const placeholderIndex = this.get_children().indexOf(
                 this.placeHolder
             );
-            if (this.placeHolder.get_parent() == this)
+            if (this.placeHolder.get_parent() == this) {
                 this.remove_child(this.placeHolder);
+            }
 
             if (this.draggedActor) {
                 reparentActor(this.draggedActor, this);
@@ -199,8 +205,9 @@ export class ReorderableList extends Clutter.Actor {
         const connectCancelId = actor._draggable.connect(
             'drag-cancelled',
             () => {
-                if (this.placeHolder.get_parent() == this)
+                if (this.placeHolder.get_parent() == this) {
                     this.remove_child(this.placeHolder);
+                }
             }
         );
         const connectEndId = actor._draggable.connect('drag-end', () => {

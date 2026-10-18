@@ -261,8 +261,9 @@ export class WorkspaceButton extends MatButton {
                         this.msWorkspace
                     ) !==
                     this.msWorkspaceManager.primaryMsWorkspaces.length - 1
-                )
+                ) {
                     msWorkspace.close();
+                }
             }
         });
 
@@ -522,7 +523,9 @@ export class WorkspaceButtonIcon extends St.Widget {
             }),
         ];
         this.connect('destroy', () => {
-            for (const s of themeSignals) Me.msThemeManager.disconnect(s);
+            for (const s of themeSignals) {
+                Me.msThemeManager.disconnect(s);
+            }
         });
     }
 
@@ -531,7 +534,9 @@ export class WorkspaceButtonIcon extends St.Widget {
         const isDesaturate =
             this.desaturateEffect !== undefined &&
             this.desaturateEffect === this.get_effect('desaturate_icons');
-        if (shouldDesaturate === isDesaturate) return;
+        if (shouldDesaturate === isDesaturate) {
+            return;
+        }
         if (shouldDesaturate) {
             this.desaturateEffect = new Clutter.DesaturateEffect();
             this.add_effect_with_name(

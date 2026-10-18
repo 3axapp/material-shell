@@ -8,7 +8,9 @@ export function getExtensionSettings(
     extensionUUID: string
 ): Gio.Settings | null {
     const extension = Main.extensionManager.lookup(extensionUUID);
-    if (!extension) return null;
+    if (!extension) {
+        return null;
+    }
 
     try {
         // Check if the schema exists in the global schema source.
