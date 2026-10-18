@@ -56,10 +56,11 @@ WRAPPER
     echo "$name"
     env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME \
         HOME="$home" MS_UUID="$uuid" MS_MODE="$mode" \
-        timeout 60 dbus-run-session -- sh -c '
+        dbus-run-session -- sh -c '
             dconf write /org/gnome/shell/enabled-extensions "[\"$MS_UUID\"]"
             dconf write /org/gnome/shell/disable-user-extensions false
-            exec gnome-shell "$MS_MODE" --wayland-display "ms-test-$$"
+            exec timeout -k 5 60 \
+                gnome-shell "$MS_MODE" --wayland-display "ms-test-$$"
         ' > "$log" 2>&1 || true
 
     results=$(sed -n 's/^MSTEST-Message: [0-9:.]*: //p' "$log")
