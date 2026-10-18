@@ -166,6 +166,7 @@ export class MsWindow extends Clutter.Actor {
 
     app: Shell.App;
     appSignalId: number | undefined = undefined;
+    deferredSourceIds = new Set<number>();
     _persistent: boolean | undefined;
     createdAt: Date;
     windowClone: Clutter.Clone;
@@ -532,6 +533,28 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
+    private deferOnMetaWindow(
+        metaWindow: MetaWindowWithMsProperties,
+        callback: () => void
+    ) {
+        const sourceId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.deferredSourceIds.delete(sourceId);
+            const state = this.lifecycleState;
+            if (state.type === 'window' && state.metaWindow === metaWindow) {
+                callback();
+            }
+            return GLib.SOURCE_REMOVE;
+        });
+        this.deferredSourceIds.add(sourceId);
+    }
+
+    private cancelDeferred() {
+        this.deferredSourceIds.forEach((sourceId) =>
+            GLib.source_remove(sourceId)
+        );
+        this.deferredSourceIds.clear();
+    }
+
     /*
      * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
      */
@@ -716,10 +739,7 @@ export class MsWindow extends Clutter.Actor {
             };
 
             if (isWayland) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                    callback();
-                    return GLib.SOURCE_REMOVE;
-                });
+                this.deferOnMetaWindow(metaWindow, callback);
             } else {
                 callback();
             }
@@ -755,7 +775,7 @@ export class MsWindow extends Clutter.Actor {
             if (isWayland) {
                 const moveTo2 = moveTo;
                 const resizeTo2 = resizeTo;
-                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.deferOnMetaWindow(metaWindow, () => {
                     if (needToResize) {
                         metaWindow.move_resize_frame(
                             true,
@@ -767,8 +787,6 @@ export class MsWindow extends Clutter.Actor {
                     } else {
                         metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
                     }
-
-                    return GLib.SOURCE_REMOVE;
                 });
             } else {
                 if (needToResize) {
@@ -782,7 +800,7 @@ export class MsWindow extends Clutter.Actor {
 
                     // Enforce window positioning since Gnome Terminal don't always move when requested
                     const moveTo2 = moveTo;
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.deferOnMetaWindow(metaWindow, () => {
                         const currentFrameRect = metaWindow.get_frame_rect();
 
                         if (
@@ -791,8 +809,6 @@ export class MsWindow extends Clutter.Actor {
                         ) {
                             metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
                         }
-
-                        return GLib.SOURCE_REMOVE;
                     });
                 } else {
                     metaWindow.move_frame(true, moveTo.x, moveTo.y);
@@ -1195,6 +1211,7 @@ export class MsWindow extends Clutter.Actor {
             this.removeDialog(metaWindow);
         }
         if (isMainMetaWindow) {
+            this.cancelDeferred();
             state.metaWindow = null;
         }
 
@@ -1338,6 +1355,7 @@ export class MsWindow extends Clutter.Actor {
         if (this.appSignalId) this.app.disconnect(this.appSignalId);
         if (this.placeholder.get_parent() === null) this.placeholder.destroy();
         this.unregisterOnMetaWindowSignals();
+        this.cancelDeferred();
         this.lifecycleState = { type: 'destroyed' };
     }
 }

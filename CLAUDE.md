@@ -27,6 +27,9 @@
   шелла — `make test-shell` (открывает окно Mdk на несколько секунд, нужен
   `mutter-devkit`), линтер — `make lint`, форматирование — `make format`. Как писать тесты — в
   [TESTING.md](documentation/development/TESTING.md).
+- Комментарии в коде — только в крайнем случае. Непонятный код сначала
+  переименуй или разбей; подробнее в
+  [README.md](documentation/development/README.md#ветки-и-коммиты).
 - Object spread и rest (`{...a}`) в `src/` ломают сборку: их не понимает
   esprima внутри `scripts/transpile.ts`. Пиши `Object.assign`.
 - Рабочая ветка — `gnome-51`. Задача делается в ветке `issue-N`, сообщения
