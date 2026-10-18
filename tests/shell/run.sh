@@ -6,7 +6,8 @@
 # Each test gets a throwaway HOME holding a copy of dist/, whose extension.js is
 # replaced by a two-line wrapper that re-exports the real bundle and imports the
 # test next to it. The shell runs as a devkit, so a Mutter Development Kit
-# window shows up for a few seconds per test.
+# window shows up for a few seconds per test. A test whose header holds the
+# line " * shell-test: headless" gets a headless shell with no monitor instead.
 #
 #   KEEP=1 tests/shell/run.sh   keep every HOME and log, not only failed ones
 
@@ -32,7 +33,7 @@ extension_errors() {
 }
 
 run_test() {
-    local test=$1 name home log extension errors results failed=0
+    local test=$1 name home log extension errors results failed=0 mode=--devkit
     name=$(basename "$test" .test.js)
     home=$(mktemp -d "${TMPDIR:-/tmp}/ms-shell-test.XXXXXX")
     log=$home/log
@@ -48,13 +49,17 @@ export { default } from './extension.real.js';
 import './shell-test/$(basename "$test")';
 WRAPPER
 
+    if grep -q '^ \* shell-test: headless$' "$test"; then
+        mode=--headless
+    fi
+
     echo "$name"
     env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME \
-        HOME="$home" MS_UUID="$uuid" \
+        HOME="$home" MS_UUID="$uuid" MS_MODE="$mode" \
         timeout 60 dbus-run-session -- sh -c '
             dconf write /org/gnome/shell/enabled-extensions "[\"$MS_UUID\"]"
             dconf write /org/gnome/shell/disable-user-extensions false
-            exec gnome-shell --devkit --wayland-display "ms-test-$$"
+            exec gnome-shell "$MS_MODE" --wayland-display "ms-test-$$"
         ' > "$log" 2>&1 || true
 
     results=$(sed -n 's/^MSTEST-Message: [0-9:.]*: //p' "$log")

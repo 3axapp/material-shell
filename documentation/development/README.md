@@ -20,6 +20,8 @@ JavaScript. Эта ветка портирована на GNOME 51 (`shell-versi
 - `gjs`, `glib-compile-schemas`, `glib-compile-resources` — для сборки схем и
   для `make test`.
 - `mutter-devkit` — для [вложенного шелла](#вложенный-шелл) и `make test-shell`.
+- `gst-launch-1.0` с `gst-plugin-pipewire` и `pw-dump` — для теста старта без
+  монитора в `make test-shell` ([TESTING.md](TESTING.md#тесты-внутри-шелла)).
 
 ## Сборка
 
