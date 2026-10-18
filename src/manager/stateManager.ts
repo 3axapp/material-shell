@@ -52,8 +52,9 @@ export class StateManager {
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
     loadRegistry(callback: (state: PersistedState) => void) {
-        if (typeof callback !== 'function')
+        if (typeof callback !== 'function') {
             throw TypeError('`callback` must be a function');
+        }
         const serializedState = global.get_persistent_state(
             's',
             'material-shell-state'
@@ -142,8 +143,9 @@ export class StateManager {
             Me.msWorkspaceManager.updatingMonitors ||
             this.stateChangedTriggered ||
             Me.instance.disableInProgress
-        )
+        ) {
             return;
+        }
 
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -155,7 +157,9 @@ export class StateManager {
 
     saveCurrentState() {
         // Avoid unnecessary work
-        if (!Me.instance.loaded || Me.instance.disableInProgress) return;
+        if (!Me.instance.loaded || Me.instance.disableInProgress) {
+            return;
+        }
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
             this.setState('workspaces-state', Me.msWorkspaceManager.state);

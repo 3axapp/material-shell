@@ -134,7 +134,9 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: this,
             id: this.connect('captured-event', (_, event: Clutter.Event) => {
-                if (!this.overviewShown) return;
+                if (!this.overviewShown) {
+                    return;
+                }
                 if (event.type() === Clutter.EventType.BUTTON_PRESS) {
                     const [x, y] = event.get_coords();
 
@@ -453,7 +455,9 @@ export class MonitorContainer extends St.Widget {
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
-        if (actor === this.msWorkspaceActor) return;
+        if (actor === this.msWorkspaceActor) {
+            return;
+        }
         if (
             this.msWorkspaceActor &&
             this.msWorkspaceActor.get_parent() === this
@@ -485,9 +489,13 @@ export class MonitorContainer extends St.Widget {
      */
     watchBackgroundActor() {
         const bgManager = this.bgManager;
-        if (!bgManager) return;
+        if (!bgManager) {
+            return;
+        }
         const actor = bgManager.backgroundActor;
-        if (!actor) return;
+        if (!actor) {
+            return;
+        }
         actor.connect('destroy', () => {
             if (bgManager.backgroundActor === actor) {
                 bgManager.backgroundActor = null;
@@ -631,7 +639,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
-        if (actor === this.msWorkspaceActor) return;
+        if (actor === this.msWorkspaceActor) {
+            return;
+        }
         let prevActor;
         if (this.msWorkspaceActor) {
             prevActor = this.msWorkspaceActor;

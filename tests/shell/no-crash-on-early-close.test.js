@@ -34,7 +34,9 @@ function findWindow() {
 
 run(async () => {
     const loaded = await until(() => global.ms.loaded, 15000);
-    if (!check('extension loaded', loaded)) return;
+    if (!check('extension loaded', loaded)) {
+        return;
+    }
 
     const client = Gio.Subprocess.new(
         ['gjs', '-c', WINDOW_SCRIPT],
@@ -50,7 +52,9 @@ run(async () => {
             metaWindow.maximized_vertically
         );
     }, 15000);
-    if (!check('window tiled and maximized', settled)) return;
+    if (!check('window tiled and maximized', settled)) {
+        return;
+    }
     await wait(500);
 
     const metaWindow = findWindow();

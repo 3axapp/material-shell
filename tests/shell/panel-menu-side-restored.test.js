@@ -26,7 +26,9 @@ function arrowSideRestored(boxPointer) {
 
 run(async () => {
     const loaded = await until(() => global.ms.loaded, 15000);
-    if (!check('extension loaded', loaded)) return;
+    if (!check('extension loaded', loaded)) {
+        return;
+    }
 
     const oldMenu = Main.panel.statusArea.quickSettings.menu;
     const button = new PanelMenu.Button(0.0, 'mstest');
@@ -38,7 +40,9 @@ run(async () => {
             Main.extensionManager.lookup(UUID).state !== ExtensionState.ACTIVE,
         5000
     );
-    if (!check('extension disabled', disabled)) return;
+    if (!check('extension disabled', disabled)) {
+        return;
+    }
 
     const [newOk, newDetails] = arrowSideRestored(button.menu._boxPointer);
     check('menu added after enable keeps its arrow side', newOk, newDetails);

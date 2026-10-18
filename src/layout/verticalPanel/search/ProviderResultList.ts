@@ -79,7 +79,9 @@ export class ProviderResultList extends St.BoxLayout {
         this.resultList = newResultList;
         for (const resultMeta of newResultList) {
             let icon = resultMeta.createIcon(32);
-            if (!icon) icon = this.provider.createFallbackIcon(32);
+            if (!icon) {
+                icon = this.provider.createFallbackIcon(32);
+            }
             const entry = new SearchResultEntry(
                 icon,
                 resultMeta.name,

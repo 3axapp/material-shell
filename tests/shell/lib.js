@@ -37,7 +37,9 @@ export async function until(predicate, timeoutMs) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
         try {
-            if (predicate()) return true;
+            if (predicate()) {
+                return true;
+            }
         } catch (_error) {
             // Not ready yet.
         }
@@ -81,11 +83,17 @@ export function watchMenus() {
     };
 
     Main.layoutManager.uiGroup.connect('child-added', (_group, actor) => {
-        if (!(actor instanceof BoxPointer.BoxPointer)) return;
+        if (!(actor instanceof BoxPointer.BoxPointer)) {
+            return;
+        }
         watcher.added++;
-        if (actor.mapped) checkLater(actor);
+        if (actor.mapped) {
+            checkLater(actor);
+        }
         const mappedId = actor.connect('notify::mapped', () => {
-            if (actor.mapped) checkLater(actor);
+            if (actor.mapped) {
+                checkLater(actor);
+            }
         });
         actor.connect('destroy', () => {
             watcher.destroyed++;
@@ -98,8 +106,12 @@ export function watchMenus() {
 function describeMenu(menu) {
     const labels = [];
     const collect = (actor) => {
-        if (actor.text && !labels.includes(actor.text)) labels.push(actor.text);
-        for (const child of actor.get_children()) collect(child);
+        if (actor.text && !labels.includes(actor.text)) {
+            labels.push(actor.text);
+        }
+        for (const child of actor.get_children()) {
+            collect(child);
+        }
     };
     collect(menu);
     return labels.slice(0, 3).join(' / ') || menu.toString();

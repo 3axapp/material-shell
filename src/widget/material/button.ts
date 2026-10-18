@@ -88,7 +88,9 @@ export class MatButton extends St.Widget {
      * Just the child width
      */
     override vfunc_get_preferred_width(forHeight: number) {
-        if (!this.child) return super.vfunc_get_preferred_width(forHeight);
+        if (!this.child) {
+            return super.vfunc_get_preferred_width(forHeight);
+        }
         return this.child.vfunc_get_preferred_width(forHeight);
     }
 
@@ -96,7 +98,9 @@ export class MatButton extends St.Widget {
      * Just the child height
      */
     override vfunc_get_preferred_height(forWidth: number) {
-        if (!this.child) return super.vfunc_get_preferred_height(forWidth);
+        if (!this.child) {
+            return super.vfunc_get_preferred_height(forWidth);
+        }
         return this.child.vfunc_get_preferred_height(forWidth);
     }
 

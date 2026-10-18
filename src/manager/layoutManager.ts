@@ -195,7 +195,9 @@ export class LayoutManager extends MsManager {
     // }
 
     tileWindows() {
-        if (this.tilingInProgress) return;
+        if (this.tilingInProgress) {
+            return;
+        }
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {

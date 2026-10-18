@@ -205,7 +205,9 @@ export default class MaterialShellExtension
                 delete this.disableInProgress;
                 return;
             }
-            if (!modules) return;
+            if (!modules) {
+                return;
+            }
             if (_closingId !== undefined) {
                 global.display.disconnect(_closingId);
             }
@@ -243,7 +245,9 @@ export default class MaterialShellExtension
         }
         log('No monitor yet, waiting for one before building the interface');
         const id = Main.layoutManager.connect('monitors-changed', () => {
-            if (!Main.layoutManager.primaryMonitor) return;
+            if (!Main.layoutManager.primaryMonitor) {
+                return;
+            }
             Main.layoutManager.disconnect(id);
             _monitorsChangedId = undefined;
             callback();
@@ -260,7 +264,9 @@ export default class MaterialShellExtension
         }
         this.loaded = true;
         this.locked = false;
-        if (oldOverview.visible) oldOverview.toggle();
+        if (oldOverview.visible) {
+            oldOverview.toggle();
+        }
         oldOverview.isDummy = true;
         this.emit('extension-loaded');
         this.msNotificationManager?.check();
@@ -313,7 +319,9 @@ export default class MaterialShellExtension
     }
 
     hideSplashScreens() {
-        if (splashScreens.length < 1) return GLib.SOURCE_REMOVE;
+        if (splashScreens.length < 1) {
+            return GLib.SOURCE_REMOVE;
+        }
         splashScreens.forEach((splashscreen) => {
             splashscreen.ease({
                 opacity: 0,

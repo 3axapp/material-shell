@@ -99,7 +99,9 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     restoreAppIndicatorSettings() {
-        if (this.originalAppIndicatorIconSize === undefined) return;
+        if (this.originalAppIndicatorIconSize === undefined) {
+            return;
+        }
         // Restoring the settings won't actually work most of the time.
         // Since we don't get a proper signal when shutting down gnome-shell (when logging out, or gnome-shell crashes, etc.)
         // we can't reliably restore the settings. But it might still be useful if a user tries material shell for a few minutes
@@ -247,17 +249,23 @@ export class MsStatusArea extends Clutter.Actor {
         this.gnomeShellPanel._rightBox.disconnect(signalIds.rightBoxActor);
 
         this.leftBoxActors.forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._leftBox);
         });
         this.centerBoxActors.forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._centerBox);
         });
         this.rightBoxActors.reverse().forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._rightBox);
         });
@@ -487,7 +495,9 @@ export class MsDateMenuBox extends St.Widget {
         const clockSections: string[] = assertNotNull(this._wallClock)
             .clock.replace(/∶/g, ' ')
             .split(' ');
-        if (!clockSections[0]) clockSections.shift();
+        if (!clockSections[0]) {
+            clockSections.shift();
+        }
         const markup = clockSections
             .map((section) => `<span>${section}</span>`)
             .join('\n');
@@ -514,7 +524,9 @@ export class MsDateMenuBox extends St.Widget {
                     }
                     return;
                 }
-                if (this.clockLabel.has_style_class_name('primary')) return;
+                if (this.clockLabel.has_style_class_name('primary')) {
+                    return;
+                }
                 this.clockLabel.add_style_class_name('primary');
             }
         } else {
@@ -523,7 +535,9 @@ export class MsDateMenuBox extends St.Widget {
                 this.notificationIconRing.hide();
                 this.dndIcon.hide();
             } else {
-                if (!this.clockLabel.has_style_class_name('primary')) return;
+                if (!this.clockLabel.has_style_class_name('primary')) {
+                    return;
+                }
                 this.clockLabel.remove_style_class_name('primary');
             }
         }

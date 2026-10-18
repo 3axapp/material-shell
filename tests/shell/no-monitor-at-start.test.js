@@ -30,15 +30,18 @@ run(async () => {
             monitorsAtStart === 0,
             `${monitorsAtStart} already present, so this run proves nothing`
         )
-    )
+    ) {
         return;
+    }
 
     await plugMonitor();
     const monitorAdded = await until(
         () => global.display.get_n_monitors() > 0,
         15000
     );
-    if (!check('a monitor appears', monitorAdded, describeState())) return;
+    if (!check('a monitor appears', monitorAdded, describeState())) {
+        return;
+    }
 
     const built = await until(() => {
         const panel = global.ms.layout.panel;

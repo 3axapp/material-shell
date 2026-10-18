@@ -29,6 +29,7 @@ const rules = {
     ],
     '@typescript-eslint/no-non-null-assertion': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
+    curly: ['error', 'all'],
 };
 
 const tsFiles = ['**/*.ts', '**/*.tsx'];

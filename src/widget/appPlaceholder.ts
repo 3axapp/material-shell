@@ -92,7 +92,9 @@ export class AppPlaceholder extends St.Widget {
                     break;
                 case Clutter.EventType.BUTTON_RELEASE:
                 case Clutter.EventType.TOUCH_END:
-                    if (this.pressed) this.activate(event.get_button());
+                    if (this.pressed) {
+                        this.activate(event.get_button());
+                    }
                     this.pressed = false;
                     break;
                 case Clutter.EventType.LEAVE:
@@ -121,7 +123,9 @@ export class AppPlaceholder extends St.Widget {
 
     setOrientation(width: number, height: number) {
         const vertical = width < height;
-        if (vertical === this.vertical) return;
+        if (vertical === this.vertical) {
+            return;
+        }
         this.vertical = vertical;
         this.box.orientation = this.vertical
             ? Clutter.Orientation.VERTICAL
@@ -161,7 +165,9 @@ export class AppPlaceholder extends St.Widget {
     }
 
     activate(button = 0) {
-        if (this.waitForReset) return;
+        if (this.waitForReset) {
+            return;
+        }
         this.waitForReset = true;
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16, {

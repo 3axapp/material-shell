@@ -180,7 +180,9 @@ export class BaseTilingLayout<
         const resolvedBox = this.resolveBox(box);
 
         for (const tileable of this.tileableListVisible) {
-            if (tileable instanceof MsWindow && tileable.dragged) return;
+            if (tileable instanceof MsWindow && tileable.dragged) {
+                return;
+            }
             this.tileTileable(
                 tileable,
                 resolvedBox,
@@ -346,10 +348,18 @@ export class BaseTilingLayout<
             height -= halfGap;
         }
 
-        if (x < 0) x = 0;
-        if (y < 0) y = 0;
-        if (width < 1) width = 1;
-        if (height < 1) height = 1;
+        if (x < 0) {
+            x = 0;
+        }
+        if (y < 0) {
+            y = 0;
+        }
+        if (width < 1) {
+            width = 1;
+        }
+        if (height < 1) {
+            height = 1;
+        }
 
         return { x, y, width, height };
     }

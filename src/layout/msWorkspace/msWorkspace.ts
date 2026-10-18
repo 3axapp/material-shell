@@ -258,7 +258,9 @@ export class MsWorkspace extends WithSignals {
     }
 
     get workspace() {
-        if (this.monitorIsExternal) return null;
+        if (this.monitorIsExternal) {
+            return null;
+        }
         return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
     }
 
@@ -328,7 +330,9 @@ export class MsWorkspace extends WithSignals {
     async removeMsWindow(msWindow: MsWindow) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
-        if (this.msWindowList.indexOf(msWindow) === -1) return;
+        if (this.msWindowList.indexOf(msWindow) === -1) {
+            return;
+        }
         const oldFocused = this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         this.tileableList.splice(tileableIndex, 1);
@@ -422,7 +426,9 @@ export class MsWorkspace extends WithSignals {
 
     swapTileableLeft(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
-        if (index === -1) return;
+        if (index === -1) {
+            return;
+        }
         if (index > 0 && tileable != this.appLauncher) {
             const previousTileable = this.tileableList[index - 1];
             this.swapTileable(tileable, previousTileable);
@@ -432,7 +438,9 @@ export class MsWorkspace extends WithSignals {
 
     swapTileableRight(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
-        if (index === -1) return;
+        if (index === -1) {
+            return;
+        }
         if (
             index < this.tileableList.length - 1 &&
             tileable != this.appLauncher
@@ -484,7 +492,9 @@ export class MsWorkspace extends WithSignals {
 
     focusPreviousTileableFromHistory() {
         const toFocus = this.popTileableFromFocusHistory();
-        if (toFocus !== undefined) this.focusTileable(toFocus);
+        if (toFocus !== undefined) {
+            this.focusTileable(toFocus);
+        }
     }
 
     private maintainTileableFocusHistory() {
@@ -495,8 +505,9 @@ export class MsWorkspace extends WithSignals {
             }
         }
 
-        while (this.focusHistory.length > MAX_FOCUS_HISTORY_LENGTH)
+        while (this.focusHistory.length > MAX_FOCUS_HISTORY_LENGTH) {
             this.focusHistory.splice(0, 1);
+        }
     }
 
     private pushTileableToFocusHistory(tileable: Tileable) {
@@ -522,7 +533,9 @@ export class MsWorkspace extends WithSignals {
         }
 
         const newFocusIndex = this.tileableList.indexOf(tileable);
-        if (newFocusIndex === -1) return;
+        if (newFocusIndex === -1) {
+            return;
+        }
 
         const oldTileableFocused = this.tileableFocused;
         if (
@@ -551,7 +564,9 @@ export class MsWorkspace extends WithSignals {
         }
 
         const focused = this.tileableFocused;
-        if (focused !== null) focused.grab_key_focus();
+        if (focused !== null) {
+            focused.grab_key_focus();
+        }
     }
 
     setTileableAtIndex(tileableToMove: Tileable, index: number) {
@@ -628,7 +643,9 @@ export class MsWorkspace extends WithSignals {
 
     activate() {
         const workspace = this.workspace;
-        if (workspace === null) return;
+        if (workspace === null) {
+            return;
+        }
 
         if (
             this.tileableFocused instanceof MsWindow &&

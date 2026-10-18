@@ -19,7 +19,9 @@ const prefsWindow = await loadPreferencesWindow();
 let failures = 0;
 function check(label, actual, expected) {
     const passed = String(actual) === String(expected);
-    if (!passed) failures++;
+    if (!passed) {
+        failures++;
+    }
     print(
         `${passed ? 'PASS' : 'FAIL'}  ${label}: ${actual}` +
             (passed ? '' : ` (expected ${expected})`)
@@ -29,13 +31,17 @@ function check(label, actual, expected) {
 /** Every preferences row in the window, keyed by its title. */
 const rows = new Map();
 walkWidgets(prefsWindow, (widget) => {
-    if (widget instanceof Adw.PreferencesRow) rows.set(widget.title, widget);
+    if (widget instanceof Adw.PreferencesRow) {
+        rows.set(widget.title, widget);
+    }
 });
 
 function suffixOfType(row, type) {
     let found = null;
     walkWidgets(row, (widget) => {
-        if (widget instanceof type) found = widget;
+        if (widget instanceof type) {
+            found = widget;
+        }
     });
     return found;
 }
@@ -228,4 +234,6 @@ if (dialog) {
 }
 
 print(failures === 0 ? '\nAll checks passed' : `\n${failures} check(s) failed`);
-if (failures > 0) imports.system.exit(1);
+if (failures > 0) {
+    imports.system.exit(1);
+}

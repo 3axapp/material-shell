@@ -186,7 +186,9 @@ export class TaskBar extends St.Widget {
             }
         }
 
-        if (!nextItem) return;
+        if (!nextItem) {
+            return;
+        }
 
         //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
@@ -213,10 +215,14 @@ export class TaskBar extends St.Widget {
             item = new TileableItem(tileable);
             this.menuManager.addMenu(assertNotNull(item.menu));
             item.connect('middle-clicked', (_) => {
-                if (item.tileable instanceof MsWindow) item.tileable.kill();
+                if (item.tileable instanceof MsWindow) {
+                    item.tileable.kill();
+                }
             });
             item.connect('close-clicked', (_) => {
-                if (item.tileable instanceof MsWindow) item.tileable.kill();
+                if (item.tileable instanceof MsWindow) {
+                    item.tileable.kill();
+                }
             });
         } else {
             item = new IconTaskBarItem(
@@ -513,8 +519,12 @@ export class TileableItem extends TaskBarItem {
     }
 
     setTileable(tileable: Tileable) {
-        if (tileable === this.tileable) return;
-        if (this.titleSignalKiller) this.titleSignalKiller();
+        if (tileable === this.tileable) {
+            return;
+        }
+        if (this.titleSignalKiller) {
+            this.titleSignalKiller();
+        }
         this.tileable = tileable;
         this.app = tileable instanceof MsWindow ? tileable.app : null;
         if (this.icon) {
@@ -547,7 +557,9 @@ export class TileableItem extends TaskBarItem {
     }
 
     buildIcon(height: number) {
-        if (this.icon) this.icon.destroy();
+        if (this.icon) {
+            this.icon.destroy();
+        }
         assert(this.app !== null, 'cannot build an icon without an app');
         this.lastHeight = height;
         const icon = this.app.create_icon_texture(height / 2);
@@ -610,7 +622,9 @@ export class TileableItem extends TaskBarItem {
     _onDestroy() {
         this.buildIconIdle.cancel();
         this.signalManager.destroy();
-        if (this.menu !== undefined) this.menu.destroy();
+        if (this.menu !== undefined) {
+            this.menu.destroy();
+        }
     }
 }
 
@@ -642,7 +656,9 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     setTileable(tileable: Tileable) {
-        if (tileable === this.tileable) return;
+        if (tileable === this.tileable) {
+            return;
+        }
         this.tileable = tileable;
     }
 

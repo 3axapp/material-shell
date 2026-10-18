@@ -300,8 +300,9 @@ export class MsApplicationButtonContainer extends St.Widget {
                     }
                 case Clutter.KEY_Return:
                 case Clutter.KEY_KP_Enter:
-                    if (this.currentButtonFocused)
+                    if (this.currentButtonFocused) {
                         this.currentButtonFocused.emit('clicked', 0);
+                    }
                     return Clutter.EVENT_STOP;
             }
 
@@ -513,7 +514,9 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     highlightButton(button: MsApplicationButton) {
-        if (button == this.currentButtonFocused) return;
+        if (button == this.currentButtonFocused) {
+            return;
+        }
         if (this.currentButtonFocused) {
             this.currentButtonFocused.remove_style_class_name('highlighted');
         }

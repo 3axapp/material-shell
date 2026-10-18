@@ -24,7 +24,9 @@ export class DisableIncompatibleExtensionsModule {
             ExtensionSystem.ExtensionManager.prototype._callExtensionEnable;
         ExtensionSystem.ExtensionManager.prototype._callExtensionEnable =
             function (uuid: string) {
-                if (incompatibleExtensions.includes(uuid)) return;
+                if (incompatibleExtensions.includes(uuid)) {
+                    return;
+                }
                 assertNotNull(originalFunction).call(this, uuid);
             };
 

@@ -96,9 +96,15 @@ export type IntroducedInGnome<V extends VERSIONS[number] | never> = {
 /// E.g. "43.alpha" will be parsed to [43,-3]
 export function parseVersion(s: string): number[] {
     const components = s.split('.').map((x) => {
-        if (x === 'alpha') return -3;
-        if (x === 'beta') return -2;
-        if (x === 'rc') return -1;
+        if (x === 'alpha') {
+            return -3;
+        }
+        if (x === 'beta') {
+            return -2;
+        }
+        if (x === 'rc') {
+            return -1;
+        }
         return Number(x);
     });
     if (!components.every((x) => isFinite(x))) {
