@@ -688,6 +688,9 @@ export class MsWorkspaceActor extends Clutter.Actor {
     }
 
     updateUI() {
+        if (!Main.layoutManager.monitors.includes(this.msWorkspace.monitor)) {
+            return;
+        }
         const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
             this.msWorkspace.monitor.index
         );

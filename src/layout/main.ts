@@ -211,9 +211,10 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: Main.layoutManager,
             id: Main.layoutManager.connect('monitors-changed', () => {
-                this.primaryMonitorContainer.setMonitor(
-                    assertNotNull(this.primaryMonitor)
-                );
+                if (!this.primaryMonitor) {
+                    return;
+                }
+                this.primaryMonitorContainer.setMonitor(this.primaryMonitor);
 
                 const externalMonitorsDiff =
                     Main.layoutManager.monitors.length -

@@ -22,7 +22,6 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
-import { Monitor } from 'src/utils/shellTypes';
 
 const isTileableItem = (obj: unknown): obj is TileableItem => {
     return obj instanceof TileableItem;
@@ -322,7 +321,6 @@ export class TaskBarItem extends MatButton {
     override _delegate: this;
     draggable: boolean;
     contentActor: St.Widget;
-    monitor: Monitor;
     menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 
@@ -334,7 +332,6 @@ export class TaskBarItem extends MatButton {
         this._delegate = this;
         this.draggable = draggable;
         this.contentActor = contentActor;
-        this.monitor = assertNotNull(Main.layoutManager.primaryMonitor);
         this.set_child(this.contentActor);
 
         this.connect('primary-action', () => {
@@ -350,15 +347,6 @@ export class TaskBarItem extends MatButton {
                 this.emit('middle-clicked');
             }
         });
-    }
-
-    override vfunc_parent_set() {
-        const actor = this.get_parent() || this;
-        if (actor.is_mapped()) {
-            this.monitor = assertNotNull(
-                Main.layoutManager.findMonitorForActor(actor)
-            );
-        }
     }
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {

@@ -21,7 +21,7 @@ make test-shell  # внутри вложенного шелла, или: tests/s
 | `tests/harness.js` | Загружает `dist/prefs.js` в `Adw.PreferencesWindow`. |
 | `tests/stub/` | Заглушка ресурса шелла, который импортирует `prefs.js`. |
 | `tests/shell/run.sh` | Запускает каждый `tests/shell/*.test.js` в собственном вложенном шелле. При ошибке выходит с ненулевым кодом. |
-| `tests/shell/lib.js` | Помощники для тестов в шелле: `until`, `check`, `run`, `watchMenus`. |
+| `tests/shell/lib.js` | Помощники для тестов в шелле: `until`, `check`, `run`, `watchMenus`, `plugMonitor`. |
 | `tests/shell/*.test.js` | Сами тесты в шелле. |
 
 ## Тесты окна настроек
@@ -87,9 +87,22 @@ make test-shell  # внутри вложенного шелла, или: tests/s
 - Без `media.type=Video` в `stream-properties` WirePlumber не связывает
   потребителя с видеопотоком и отвечает `target not found`.
 
-Нужны запущенные PipeWire и WirePlumber и плагин `gst-plugin-pipewire`. Пример —
-`no-monitor-at-start.test.js`
-([#20](https://github.com/3axapp/material-shell/issues/20)).
+- Размер монитора Mutter берёт из того, что просит потребитель. Без caps
+  `video/x-raw,width=1280,height=800` монитор получается 1×1, и в логе сыплются
+  предупреждения об отрицательных размерах акторов.
+
+Всё это делает `plugMonitor()` из `lib.js`. Она возвращает функцию, которая
+снимает монитор через `Session.Stop`. Нужны запущенные PipeWire и WirePlumber и
+плагин `gst-plugin-pipewire`. Примеры — `no-monitor-at-start.test.js`
+([#20](https://github.com/3axapp/material-shell/issues/20)) и
+`last-monitor-unplugged.test.js`
+([#22](https://github.com/3axapp/material-shell/issues/22)).
+
+Посмотреть такой шелл глазами можно, заменив `fakesink` на
+`videoconvert ! autovideosink`: картинка монитора откроется в обычном окне.
+Мышь и клавиатуру это окно во вложенный шелл не передаёт. Вложенный шелл в
+режиме `--devkit` для снятия монитора не годится: когда окно Mdk закрывается,
+шелл завершается.
 
 ### Как читается результат
 
