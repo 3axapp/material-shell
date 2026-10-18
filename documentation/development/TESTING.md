@@ -67,12 +67,29 @@ make test-shell  # внутри вложенного шелла, или: tests/s
 Нужны пакет `mutter-devkit` и работающая сессия: на каждый тест на несколько
 секунд открывается окно Mutter Development Kit.
 
-Почему `--devkit`, а не `--headless`: вложенный шелл стартует без мониторов, а
-Mdk добавляет свой примерно через секунду. Это ровно ситуация
-[#12](https://github.com/3axapp/material-shell/issues/12). Тесту, которому
-монитор нужен с самого старта, подошёл бы `--headless --virtual-monitor
-1280x800` — он проверен и окон не открывает, — но `run.sh` пока так запускать
-не умеет.
+Под `--devkit` шелл стартует без мониторов, а Mdk добавляет свой примерно через
+секунду. Обычно расширение успевает загрузиться раньше, но не всегда, поэтому
+полагаться на этот порядок нельзя. Тесту, которому монитор нужен с самого
+старта, подошёл бы `--headless --virtual-monitor 1280x800`: он проверен и окон
+не открывает, но `run.sh` пока так запускать не умеет.
+
+**Старт без монитора** ([#12](https://github.com/3axapp/material-shell/issues/12))
+проверяется в режиме `--headless` без монитора. Этот режим включает строка
+` * shell-test: headless` в шапке файла теста. Монитор тест добавляет сам:
+у Mutter вызываются ScreenCast `CreateSession` → `RecordVirtual` → `Start`.
+Виртуальный монитор появляется, только когда к потоку PipeWire подключается
+потребитель. Потребителем служит `gst-launch-1.0 pipewiresrc ! fakesink`, и на
+нём легко споткнуться:
+
+- `pipewiresrc` ищет узел по `object.serial`, а Mutter в `PipeWireStreamAdded`
+  сообщает id. Serial берётся из `pw-dump <id>`, причём в выводе бывают и
+  объекты, у которых serial совпадает с этим id.
+- Без `media.type=Video` в `stream-properties` WirePlumber не связывает
+  потребителя с видеопотоком и отвечает `target not found`.
+
+Нужны запущенные PipeWire и WirePlumber и плагин `gst-plugin-pipewire`. Пример —
+`no-monitor-at-start.test.js`
+([#20](https://github.com/3axapp/material-shell/issues/20)).
 
 ### Как читается результат
 
