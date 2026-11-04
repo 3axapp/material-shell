@@ -494,23 +494,16 @@ export class MsWindow extends Clutter.Actor {
             ? this.msWorkspace.monitor.y
             : workArea.y;
         if (this.lifecycleState.type === 'window') {
-            // The dialogs are sorted because it affects their stacking order when displayed. We show the most recently interacted with window one on top.
-            [...this.lifecycleState.dialogs]
-                .sort(
-                    (firstDialog, secondDialog) =>
-                        firstDialog.metaWindow.user_time -
-                        secondDialog.metaWindow.user_time
-                )
-                .forEach((dialog) => {
-                    const dialogFrame = dialog.metaWindow.get_buffer_rect();
-                    const x1 = dialogFrame.x - box.x1 - offsetX;
-                    const x2 = x1 + dialogFrame.width;
-                    const y1 = dialogFrame.y - box.y1 - offsetY;
-                    const y2 = y1 + dialogFrame.height;
+            this.lifecycleState.dialogs.forEach((dialog) => {
+                const dialogFrame = dialog.metaWindow.get_buffer_rect();
+                const x1 = dialogFrame.x - box.x1 - offsetX;
+                const x2 = x1 + dialogFrame.width;
+                const y1 = dialogFrame.y - box.y1 - offsetY;
+                const y2 = y1 + dialogFrame.height;
 
-                    const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-                    dialog.clone.allocate(dialogBox);
-                });
+                const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
+                dialog.clone.allocate(dialogBox);
+            });
         }
     }
 
@@ -1179,7 +1172,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     /**
-     * Set focus to the most recent dialog but ONLY if they are of type Meta.WindowType.DIALOG or Meta.WindowType.MODAL_DIALOG. Other dialogs are not necessarily in front of the main window and do not necessarily require the users attention.
+     * Set focus to the topmost dialog but ONLY if they are of type Meta.WindowType.DIALOG or Meta.WindowType.MODAL_DIALOG. Other dialogs are not necessarily in front of the main window and do not necessarily require the users attention.
      */
     focusDialogs(): boolean {
         let focused = false;
@@ -1187,30 +1180,43 @@ export class MsWindow extends Clutter.Actor {
             this.lifecycleState.type === 'window' &&
             this.lifecycleState.dialogs
         ) {
-            [
-                ...this.lifecycleState.dialogs.filter((dialog) =>
+            this.stackDialogClones();
+            const topDialog = this.dialogsFromBottomToTop()
+                .filter((dialog) =>
                     // Filter out Meta.WindowType.UTILITY Windows
                     [
                         Meta.WindowType.DIALOG,
                         Meta.WindowType.MODAL_DIALOG,
                     ].includes(dialog.metaWindow.window_type)
-                ),
-            ]
-                .sort((firstDialog, secondDialog) => {
-                    return (
-                        firstDialog.metaWindow.user_time -
-                        secondDialog.metaWindow.user_time
-                    );
-                })
-                .forEach((dialog, index, array) => {
-                    this.set_child_above_sibling(dialog.clone, null);
-                    if (index === array.length - 1) {
-                        dialog.metaWindow.activate(global.get_current_time());
-                        focused = true;
-                    }
-                });
+                )
+                .pop();
+            if (topDialog) {
+                topDialog.metaWindow.activate(global.get_current_time());
+                focused = true;
+            }
         }
         return focused;
+    }
+
+    stackDialogClones() {
+        this.dialogsFromBottomToTop().forEach((dialog) => {
+            this.set_child_above_sibling(dialog.clone, null);
+        });
+    }
+
+    private dialogsFromBottomToTop(): Dialog[] {
+        if (this.lifecycleState.type !== 'window') {
+            return [];
+        }
+        const dialogs = this.lifecycleState.dialogs;
+        const stacked = global.display.sort_windows_by_stacking(
+            dialogs.map((dialog) => dialog.metaWindow)
+        );
+        return [...dialogs].sort(
+            (first, second) =>
+                stacked.indexOf(first.metaWindow) -
+                stacked.indexOf(second.metaWindow)
+        );
     }
 
     /**

@@ -146,6 +146,11 @@ export class MsWindowManager extends MsManager {
         this.msDndManager = new MsDndManager(this);
         this.msResizeManager = new MsResizeManager(this);
         this.msFocusManager = new MsFocusManager(this);
+        this.observe(global.display, 'restacked', () => {
+            this.msWindowList.forEach((msWindow) => {
+                msWindow.stackDialogClones();
+            });
+        });
         this.observe(
             global.display,
             'window-created',
