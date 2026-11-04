@@ -14,8 +14,18 @@ export interface NumberPickerParams {
     max: number;
 }
 
+export interface MatNumberPickerSignals extends St.BoxLayout.SignalSignatures {
+    changed: (value: number) => void;
+}
+
 @registerGObjectClass
 export class MatNumberPicker extends St.BoxLayout {
+    declare connect: GObject.SignalMethods<
+        this,
+        MatNumberPickerSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, MatNumberPickerSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'MatNumberPicker',
         Signals: {

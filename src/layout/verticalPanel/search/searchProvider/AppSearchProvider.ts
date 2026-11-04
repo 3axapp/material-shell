@@ -4,6 +4,7 @@ import St from 'gi://St';
 import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
 import { default as Me } from 'src/extension';
+import { WithSignals } from 'src/utils/gjs';
 
 import { ResultMeta } from './searchProvider';
 
@@ -90,22 +91,16 @@ export class AppSearchProvider {
         // results can be filtered correctly.
         if (!this._parentalControlsManager.initialized) {
             return new Promise((resolve) => {
-                const initializedId = this._parentalControlsManager.connect(
-                    'app-filter-changed',
-                    async () => {
-                        if (this._parentalControlsManager.initialized) {
-                            this._parentalControlsManager.disconnect(
-                                initializedId
-                            );
-                            resolve(
-                                await this.getInitialResultSet(
-                                    terms,
-                                    cancellable
-                                )
-                            );
-                        }
+                const initializedId = (
+                    this._parentalControlsManager as unknown as WithSignals
+                ).connect('app-filter-changed', async () => {
+                    if (this._parentalControlsManager.initialized) {
+                        this._parentalControlsManager.disconnect(initializedId);
+                        resolve(
+                            await this.getInitialResultSet(terms, cancellable)
+                        );
                     }
-                );
+                });
             });
         }
 

@@ -12,8 +12,17 @@ interface MatButtonParams extends Partial<St.Widget.ConstructorProps> {
     child?: St.Widget;
 }
 
+export interface MatButtonSignals extends St.Widget.SignalSignatures {
+    clicked: (button: number) => void;
+    'primary-action': () => void;
+    'secondary-action': () => void;
+}
+
 @registerGObjectClass
 export class MatButton extends St.Widget {
+    declare connect: GObject.SignalMethods<this, MatButtonSignals>['connect'];
+    declare emit: GObject.SignalMethods<this, MatButtonSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'MatButton',
         Signals: {

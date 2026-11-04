@@ -55,7 +55,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         }
         this.currentDisplayed = {
             tileable: actor,
-            destroySignal: actor.connect('destroy', () => {
+            destroySignal: (actor as Clutter.Actor).connect('destroy', () => {
                 this.currentDisplayed = null;
             }),
         };

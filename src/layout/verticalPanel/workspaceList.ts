@@ -26,7 +26,7 @@ export class WorkspaceList extends St.Widget {
     msWorkspaceButtonMap: Map<MsWorkspace, WorkspaceButton>;
     msWorkspaceManager: MsWorkspaceManager;
     menuManager: PopupMenu.PopupMenuManager;
-    buttonList: ReorderableList;
+    buttonList: ReorderableList<WorkspaceButton>;
     workspaceActiveIndicator: St.Widget;
     workspaceSignal: number;
     buttonActive: St.Widget | undefined;

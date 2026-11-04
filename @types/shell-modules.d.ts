@@ -1,5 +1,5 @@
 /**
- * Shell modules that `@girs/gnome-shell` 50.0.4 does not ship types for.
+ * Shell modules that `@girs/gnome-shell` 51.0.1 does not ship types for.
  *
  * This file must stay free of top level imports: these are declarations of
  * modules the package does not know about, not augmentations of existing ones.

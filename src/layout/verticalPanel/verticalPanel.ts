@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
+import type GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
@@ -21,8 +22,18 @@ import { ExtendedPanelContent } from './extendedPanelContent';
 import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
 
+export interface PanelContentSignals extends St.BoxLayout.SignalSignatures {
+    toggle: () => void;
+}
+
 @registerGObjectClass
 export class PanelContent extends St.BoxLayout {
+    declare connect: GObject.SignalMethods<
+        this,
+        PanelContentSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, PanelContentSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'PanelContent',
         Signals: {

@@ -4,11 +4,12 @@ import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
 import Shell from 'gi://Shell';
+import type GObject from 'gi://GObject';
 import St from 'gi://St';
 import { throttle } from 'src/utils';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
 import { ProviderResultList } from './search/ProviderResultList';
@@ -39,8 +40,18 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 /** Extension imports */
 import { default as Me } from 'src/extension';
 
+export interface SearchResultListSignals extends St.BoxLayout.SignalSignatures {
+    'result-selected-changed': (entry: SearchResultEntry) => void;
+}
+
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
+    declare connect: GObject.SignalMethods<
+        this,
+        SearchResultListSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, SearchResultListSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'SearchResultList',
         Signals: {
@@ -124,7 +135,7 @@ export class SearchResultList extends St.BoxLayout {
         );
 
         this.parentalControlsManager = ParentalControlsManager.getDefault();
-        this.parentalControlsManager.connect(
+        (this.parentalControlsManager as unknown as WithSignals).connect(
             'app-filter-changed',
             this.reloadRemoteProviders.bind(this)
         );

@@ -142,8 +142,17 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
     return false;
 }
 
+export interface MsWindowSignals extends Clutter.Actor.SignalSignatures {
+    'title-changed': (title: string) => void;
+    'dragged-changed': (dragged: boolean) => void;
+    'request-new-meta-window': () => void;
+}
+
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
+    declare connect: GObject.SignalMethods<this, MsWindowSignals>['connect'];
+    declare emit: GObject.SignalMethods<this, MsWindowSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'MsWindow',
         Signals: {

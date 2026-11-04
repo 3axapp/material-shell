@@ -263,6 +263,11 @@ stateDiagram-v2
 сигналами. Подписка через `MsManager.observe()` снимается автоматически
 в `destroy()`. Подписку через голый `connect()` нужно снять самому.
 
+GObject-класс со своими сигналами объявляет их и для типов, иначе `tsc` не
+пропустит `connect('свой-сигнал')`: образец — `MatButtonSignals` и
+`declare connect` в `src/widget/material/button.ts`. Строки из
+`metaInfo.Signals` типы не видят, поэтому сигнатуры пишутся отдельно.
+
 Сигналы Material Shell:
 
 | Источник | Сигнал | Кто слушает | Когда |

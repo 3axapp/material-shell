@@ -8,6 +8,7 @@
  */
 import type Clutter from 'gi://Clutter';
 import type Gio from 'gi://Gio';
+import type GObject from 'gi://GObject';
 import type Meta from 'gi://Meta';
 import type St from 'gi://St';
 
@@ -89,7 +90,7 @@ declare module '@girs/gnome-shell/ui/dateMenu' {
     }
 }
 
-declare module '@girs/clutter-18/clutter-18' {
+declare module '@girs/clutter-51/clutter-51' {
     export namespace Clutter {
         interface Actor {
             /** Set by Material Shell on the actors it owns. */
@@ -98,7 +99,7 @@ declare module '@girs/clutter-18/clutter-18' {
     }
 }
 
-declare module '@girs/meta-18/meta-18' {
+declare module '@girs/meta-51/meta-51' {
     export namespace Meta {
         interface Workspace {
             _lastRemovedWindow: Meta.Window;
@@ -107,7 +108,7 @@ declare module '@girs/meta-18/meta-18' {
     }
 }
 
-declare module '@girs/shell-18/shell-18' {
+declare module '@girs/shell-51/shell-51' {
     export namespace Shell {
         interface Global {
             /** The running Material Shell instance, published by `extension.ts`. */
@@ -117,10 +118,23 @@ declare module '@girs/shell-18/shell-18' {
 }
 
 /**
- * Below: parts of the shell that exist but that `@girs/gnome-shell` 50.0.4
+ * Below: parts of the shell that exist but that `@girs/gnome-shell` 51.0.1
  * does not describe yet. Unlike the private members above, these are public
  * API, so they should disappear as the package catches up.
  */
+
+declare module '@girs/gnome-shell/ui/layout' {
+    interface LayoutManager {
+        /** The package lists these in `$signals` but keeps the base `connect`. */
+        connect<K extends keyof LayoutManager.SignalSignatures>(
+            signal: K,
+            callback: GObject.SignalCallback<
+                this,
+                LayoutManager.SignalSignatures[K]
+            >
+        ): number;
+    }
+}
 
 declare module '@girs/gnome-shell/misc/util' {
     export function trySpawn(argv: string[]): void;

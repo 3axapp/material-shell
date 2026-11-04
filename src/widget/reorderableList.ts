@@ -35,8 +35,27 @@ interface DraggableActor extends Clutter.Actor {
     acceptDrop: (source: DraggableActor) => boolean;
 }
 
+export interface ReorderableListSignals<T extends Clutter.Actor>
+    extends Clutter.Actor.SignalSignatures {
+    'drag-start': () => void;
+    'drag-end': () => void;
+    'actor-moved': (actor: T, index: number) => void;
+    'foreign-actor-inserted': (actor: T, index: number) => void;
+}
+
 @registerGObjectClass
-export class ReorderableList extends Clutter.Actor {
+export class ReorderableList<
+    T extends Clutter.Actor = Clutter.Actor
+> extends Clutter.Actor {
+    declare connect: GObject.SignalMethods<
+        this,
+        ReorderableListSignals<T>
+    >['connect'];
+    declare emit: GObject.SignalMethods<
+        this,
+        ReorderableListSignals<T>
+    >['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'ReorderableList',
         Signals: {
@@ -84,7 +103,9 @@ export class ReorderableList extends Clutter.Actor {
         this.placeHolder = new DropPlaceholder();
         this.placeHolder.connect('drag-dropped', (_, source) => {
             if (source._draggable._dragActor.get_parent()) {
-                source._draggable._dragActor.get_parent().remove_child(source);
+                (
+                    source._draggable._dragActor.get_parent() as Clutter.Actor
+                ).remove_child(source);
             }
         });
     }
@@ -180,7 +201,7 @@ export class ReorderableList extends Clutter.Actor {
                 if (placeholderIndex !== originalIndex) {
                     this.emit(
                         'actor-moved',
-                        this.draggedActor,
+                        this.draggedActor as unknown as T,
                         placeholderIndex
                     );
                 }
@@ -225,14 +246,29 @@ export class ReorderableList extends Clutter.Actor {
             actor._draggable.disconnect(connectEndId);
             delete this.foreignActor;
             if (placeholderIndex !== undefined) {
-                this.emit('foreign-actor-inserted', actor, placeholderIndex);
+                this.emit(
+                    'foreign-actor-inserted',
+                    actor as unknown as T,
+                    placeholderIndex
+                );
             }
         });
     }
 }
 
+export interface DropPlaceholderSignals extends St.Widget.SignalSignatures {
+    'drag-dropped': (source: DraggableActor) => void;
+    'drag-over': () => void;
+}
+
 @registerGObjectClass
 export class DropPlaceholder extends St.Widget {
+    declare connect: GObject.SignalMethods<
+        this,
+        DropPlaceholderSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, DropPlaceholderSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'DropPlaceHolder',
         Signals: {
@@ -256,7 +292,7 @@ export class DropPlaceholder extends St.Widget {
 
     /// Called by gnome's drag-drop system via the _delegate field
     acceptDrop(source: Clutter.Actor) {
-        this.emit('drag-dropped', source);
+        this.emit('drag-dropped', source as DraggableActor);
         return true;
     }
 

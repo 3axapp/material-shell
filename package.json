@@ -5,9 +5,9 @@
     "main": "extension.js",
     "devDependencies": {
         "@eslint/js": "^9.39.5",
-        "@girs/giounix-2.0": "^4.5.0",
-        "@girs/gnome-shell": "^50.0.4",
-        "@girs/soup-3.0": "^4.5.0",
+        "@girs/giounix-2.0": "^5.6.0",
+        "@girs/gnome-shell": "^51.0.1",
+        "@girs/soup-3.0": "^5.6.0",
         "@rollup/plugin-alias": "^3.1.1",
         "@rollup/plugin-node-resolve": "^11.1.0",
         "@types/estree": "0.0.51",
