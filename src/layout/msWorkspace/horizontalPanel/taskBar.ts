@@ -13,7 +13,7 @@ import { diffLists } from 'src/utils/diff_list';
 import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
-import { MatButton } from 'src/widget/material/button';
+import { MatButton, MatButtonSignals } from 'src/widget/material/button';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { ReorderableList } from 'src/widget/reorderableList';
 
@@ -40,7 +40,7 @@ const isTileableItemOrIconTaskBarItem = (
 export class TaskBar extends St.Widget {
     override _delegate: this;
     taskActiveIndicator: TaskActiveIndicator;
-    taskButtonContainer: ReorderableList;
+    taskButtonContainer: ReorderableList<TileableItem | IconTaskBarItem>;
     msWorkspace: MsWorkspace;
     msWorkspaceSignals: number[];
     tracker: Shell.WindowTracker;
@@ -80,18 +80,12 @@ export class TaskBar extends St.Widget {
                 }
             }
         );
-        this.taskButtonContainer.connect(
-            'drag-start',
-            (_, _actor, _foreignActor) => {
-                this.taskActiveIndicator.hide();
-            }
-        );
-        this.taskButtonContainer.connect(
-            'drag-end',
-            (_, _actor, _foreignActor) => {
-                this.taskActiveIndicator.show();
-            }
-        );
+        this.taskButtonContainer.connect('drag-start', () => {
+            this.taskActiveIndicator.hide();
+        });
+        this.taskButtonContainer.connect('drag-end', () => {
+            this.taskActiveIndicator.show();
+        });
         this.add_child(this.taskButtonContainer);
         this.msWorkspace = msWorkspace;
         this.connect('destroy', this._onDestroy.bind(this));
@@ -232,7 +226,7 @@ export class TaskBar extends St.Widget {
                 )
             );
         }
-        item.connect('left-clicked', (_) => {
+        (item as TaskBarItem).connect('left-clicked', (_) => {
             this.msWorkspace.focusTileable(item.tileable);
         });
         return item;
@@ -311,8 +305,18 @@ export class TaskActiveIndicator extends St.Widget {
     }
 }
 
+export interface TaskBarItemSignals extends MatButtonSignals {
+    'drag-dropped': () => void;
+    'drag-over': (over: boolean) => void;
+    'left-clicked': () => void;
+    'middle-clicked': () => void;
+}
+
 @registerGObjectClass
 export class TaskBarItem extends MatButton {
+    declare connect: GObject.SignalMethods<this, TaskBarItemSignals>['connect'];
+    declare emit: GObject.SignalMethods<this, TaskBarItemSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'TaskBarItem',
         Signals: {
@@ -370,8 +374,18 @@ export class TaskBarItem extends MatButton {
     }
 }
 
+export interface TileableItemSignals extends TaskBarItemSignals {
+    'close-clicked': () => void;
+}
+
 @registerGObjectClass
 export class TileableItem extends TaskBarItem {
+    declare connect: GObject.SignalMethods<
+        this,
+        TileableItemSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, TileableItemSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'TileableItem',
         Signals: {

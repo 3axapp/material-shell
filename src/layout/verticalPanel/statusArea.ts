@@ -206,7 +206,6 @@ export class MsStatusArea extends Clutter.Actor {
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
             Debug.logFocus(mainChild);
-            Debug.logFocus(Panel.QuickSettings);
             if (
                 mainChild instanceof
                 assertNotNull(this.gnomeShellPanel.statusArea.quickSettings)

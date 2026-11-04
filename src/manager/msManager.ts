@@ -25,7 +25,7 @@ export class MsManager extends WithSignals {
     ) {
         const signal = {
             from: subject,
-            id: subject.connect(property, callback),
+            id: (subject as WithSignals).connect(property, callback),
         };
         this.signals.push(signal);
         if (subject instanceof Clutter.Actor) {

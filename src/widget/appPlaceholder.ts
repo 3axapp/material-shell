@@ -8,8 +8,18 @@ import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 /** Extension imports */
 
+export interface AppPlaceholderSignals extends St.Widget.SignalSignatures {
+    activated: (button: number) => void;
+}
+
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {
+    declare connect: GObject.SignalMethods<
+        this,
+        AppPlaceholderSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, AppPlaceholderSignals>['emit'];
+
     static metaInfo: MetaInfo = {
         GTypeName: 'AppPlaceholder',
         Signals: {
