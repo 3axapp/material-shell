@@ -157,6 +157,14 @@ run(async () => {
   появления окна: `force_exit()` примерно через секунду дал `JS ERROR` из
   `MsWindow.metaWindowUnManaged`. Обычное закрытие (`meta_window.delete()`)
   через 3 с ошибки не даёт, а с остановкой шелла клиент выходит сам.
+- **Если важен тип окна,** берите X11-клиент на GTK3: `GDK_BACKEND=x11` в
+  `Gio.SubprocessLauncher` и `set_type_hint()` в окне. Xwayland под `--devkit`
+  поднимается сам, а `DISPLAY` клиент наследует от шелла. Пример —
+  `dialog-stacking.test.js`.
+- **Клик из теста** — виртуальный указатель, один на весь тест: новый стартует
+  в 0,0 и задевает горячий угол. Время события берите из
+  `GLib.get_monotonic_time()`: `global.get_current_time()` портит `user_time`
+  окна. Пример — там же.
 - **Не ждите кадров.** Вложенный шелл рисует их редко, `after-paint` за весь
   прогон приходит считанные разы. То, что должно попасть на экран, проверяйте
   по состоянию актора (`mapped`) в ближайшем `GLib.idle_add`. Так устроен
@@ -166,7 +174,7 @@ run(async () => {
 Что ещё проверено в спайке, но в тесты пока не вынесено:
 
 - **Хоткеи.** Виртуальная клавиатура
-  `Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE)`
+  `global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE)`
   и её `notify_keyval()` нажимают сочетания: `Super+S` переключил стол.
 
 ### Чего эти тесты не заменят
