@@ -196,10 +196,36 @@ export class MsWindowManager extends MsManager {
                     (metaWindowOf(x) as MetaWindowWithMsProperties)
                         .handledByMaterialShell
             );
+        const previousTiles = new Map(
+            this.managedMetaWindows.map((metaWindow) => [
+                metaWindow,
+                metaWindow.msWindow,
+            ])
+        );
         // Assign all non-dialog windows first
         this.assignNonDialogWindows(actors);
         // Assign the dialog windows to previously existing MsWindows that fits them.
         this.assignDialogWindows(actors);
+        this.syncMovedWindows(previousTiles);
+    }
+
+    /** A window changing tiles is neither a focus change nor a tile being shown or hidden, so no signal does this. */
+    private syncMovedWindows(
+        previousTiles: Map<MetaWindowWithMsProperties, MsWindow | undefined>
+    ) {
+        const movedWindows = [...previousTiles.keys()].filter(
+            (metaWindow) =>
+                metaWindow.msWindow !== undefined &&
+                metaWindow.msWindow !== previousTiles.get(metaWindow)
+        );
+        const focusedWindow =
+            global.display.get_focus_window() as MetaWindowWithMsProperties | null;
+        if (focusedWindow !== null && movedWindows.includes(focusedWindow)) {
+            this.msFocusManager.onWindowFocus();
+        }
+        for (const metaWindow of movedWindows) {
+            metaWindow.msWindow?.updateMetaWindowVisibility();
+        }
     }
 
     /** Assign non-dialog windows to either existing empty MsWindows or determine that new MsWindows should be created for them.
