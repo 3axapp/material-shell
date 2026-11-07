@@ -162,13 +162,13 @@ export class MsResizeManager extends MsManager {
         assert(this.resizeInProgress === null, 'Resize already in progress');
         this.resizeInProgress = {
             border: border,
-            msWorkspace: Me.msWorkspaceManager!.getActiveMsWorkspace(),
+            msWorkspace: Me.msWorkspaceManager.getActiveMsWorkspace(),
         };
 
         global.stage.add_child(this.inputResizer);
         this.msWindowManager.msFocusManager.pushModal(this.inputResizer);
 
-        Me.msThemeManager!.setCursor(Clutter.CursorType.MOVE);
+        Me.msThemeManager.setCursor(Clutter.CursorType.MOVE);
     }
 
     updateResize() {
@@ -194,10 +194,10 @@ export class MsResizeManager extends MsManager {
         this.resizeInProgress = null;
 
         this.msWindowManager.msFocusManager.popModal(this.inputResizer);
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
 
         global.stage.remove_child(this.inputResizer);
-        Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
+        Me.msThemeManager.setCursor(Clutter.CursorType.DEFAULT);
     }
 
     resizeTileable(

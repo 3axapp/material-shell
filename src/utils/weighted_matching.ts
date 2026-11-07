@@ -16,13 +16,15 @@ import { assert } from './assert';
  * See https://en.wikipedia.org/wiki/Assignment_problem
  * See https://en.wikipedia.org/wiki/Hungarian_algorithm
  */
-export function weighted_matching(costs: number[][]): {
+export function weightedMatching(costs: number[][]): {
     cost: number;
     assignments: Int32Array;
 } {
     const INT_MAX = 2147483647;
 
-    if (costs.length == 0) return { cost: 0, assignments: new Int32Array() };
+    if (costs.length == 0) {
+        return { cost: 0, assignments: new Int32Array() };
+    }
     const n = costs.length + 1;
     const m = costs[0].length + 1;
     if (n > m) {
@@ -49,8 +51,8 @@ export function weighted_matching(costs: number[][]): {
         do {
             // dijkstra
             done[j0] = 1;
-            let i0 = p[j0],
-                j1 = 0,
+            const i0 = p[j0];
+            let j1 = 0,
                 delta = INT_MAX;
             for (let j = 1; j < m; j++) {
                 if (done[j] === 0) {
@@ -90,9 +92,9 @@ export function weighted_matching(costs: number[][]): {
     return { cost: -v[0], assignments: ans }; // min cost
 }
 
-export function test_hungarian() {
+export function testHungarian() {
     assert(
-        weighted_matching([
+        weightedMatching([
             [10, 20, 30],
             [20, 30, 30],
             [20, 20, 5],
@@ -101,7 +103,7 @@ export function test_hungarian() {
         ''
     );
     assert(
-        weighted_matching([
+        weightedMatching([
             [10, 20, 10000],
             [1, 2, 10000],
             [5, 3, 10000],

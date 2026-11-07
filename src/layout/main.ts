@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
-import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -13,7 +12,7 @@ import {
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
 import { TranslationHelper } from 'src/utils/transition';
@@ -27,7 +26,7 @@ import { Monitor } from 'src/utils/shellTypes';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsMain',
     };
     panelsVisible: boolean;
@@ -135,9 +134,10 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: this,
             id: this.connect('captured-event', (_, event: Clutter.Event) => {
-                if (!this.overviewShown) return;
+                if (!this.overviewShown) {
+                    return;
+                }
                 if (event.type() === Clutter.EventType.BUTTON_PRESS) {
-                    const source = event.get_source();
                     const [x, y] = event.get_coords();
 
                     // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
@@ -213,9 +213,10 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: Main.layoutManager,
             id: Main.layoutManager.connect('monitors-changed', () => {
-                this.primaryMonitorContainer.setMonitor(
-                    assertNotNull(this.primaryMonitor)
-                );
+                if (!this.primaryMonitor) {
+                    return;
+                }
+                this.primaryMonitorContainer.setMonitor(this.primaryMonitor);
 
                 const externalMonitorsDiff =
                     Main.layoutManager.monitors.length -
@@ -365,7 +366,6 @@ export class MsMain extends St.Widget {
         this.panel.toggle();
     }
 
-    // eslint-disable-next-line camelcase
     add_child(actor: Clutter.Actor) {
         super.add_child(actor);
         this.set_child_above_sibling(this.aboveContainer, null);
@@ -385,14 +385,23 @@ export class MsMain extends St.Widget {
     }
 }
 
+/**
+ * background.d.ts types `backgroundActor` as always set, but
+ * watchBackgroundActor clears it once the actor has been destroyed.
+ */
+type BackgroundManager = Omit<
+    Background.BackgroundManager,
+    'backgroundActor'
+> & { backgroundActor: Meta.BackgroundActor | null };
+
 @registerGObjectClass
 export class MonitorContainer extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MonitorContainer',
     };
     bgGroup: Meta.BackgroundGroup;
     horizontalPanelSpacer: St.Widget;
-    bgManager: any;
+    bgManager?: BackgroundManager | null;
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
     monitor!: Monitor;
@@ -439,13 +448,16 @@ export class MonitorContainer extends St.Widget {
     }
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
-        this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
+        assertNotNull(assertNotNull(this.bgManager).backgroundActor).visible =
+            !monitorIsFullscreen;
         this.horizontalPanelSpacer.visible =
             this.layout.panelsVisible && !monitorIsFullscreen;
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
-        if (actor === this.msWorkspaceActor) return;
+        if (actor === this.msWorkspaceActor) {
+            return;
+        }
         if (
             this.msWorkspaceActor &&
             this.msWorkspaceActor.get_parent() === this
@@ -477,8 +489,13 @@ export class MonitorContainer extends St.Widget {
      */
     watchBackgroundActor() {
         const bgManager = this.bgManager;
-        const actor = bgManager?.backgroundActor;
-        if (!actor) return;
+        if (!bgManager) {
+            return;
+        }
+        const actor = bgManager.backgroundActor;
+        if (!actor) {
+            return;
+        }
         actor.connect('destroy', () => {
             if (bgManager.backgroundActor === actor) {
                 bgManager.backgroundActor = null;
@@ -534,7 +551,7 @@ export class MonitorContainer extends St.Widget {
 
 @registerGObjectClass
 export class PrimaryMonitorContainer extends MonitorContainer {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'PrimaryMonitorContainer',
     };
     panel: MsPanel;
@@ -622,7 +639,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
-        if (actor === this.msWorkspaceActor) return;
+        if (actor === this.msWorkspaceActor) {
+            return;
+        }
         let prevActor;
         if (this.msWorkspaceActor) {
             prevActor = this.msWorkspaceActor;

@@ -4,7 +4,7 @@ import { Debug } from './debug';
  * If a promise throws an unhandled exception it will not be logged automatically, so this method can be used to
  * ensure any errors are logged.
  */
-export function logAsyncException(e: any) {
+export function logAsyncException(e: unknown) {
     if (e instanceof Error) {
         Debug.log(
             `\nException when running asynchronous function:\n${e}\n${e.stack}\n`

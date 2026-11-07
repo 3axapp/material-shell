@@ -4,34 +4,59 @@ import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import { assert } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { MatButton } from 'src/widget/material/button';
 
 /** Extension imports */
 
+/** dnd.d.ts lags behind the shell: it lacks these fields of _Draggable */
+type Draggable = ReturnType<typeof DND.makeDraggable> & {
+    _dragActor: Clutter.Actor;
+    startGesture: Clutter.Gesture;
+};
+
 interface DraggableActor extends Clutter.Actor {
-    draggable: any;
-    _draggable: any;
+    draggable?: boolean;
+    _draggable: Draggable;
     originalHandleDragOver?: (
         source: DraggableActor,
         actor: Clutter.Actor,
         x: number,
         y: number
-    ) => any;
+    ) => DND.DragMotionResult;
     handleDragOver?: (
         source: DraggableActor,
         actor: Clutter.Actor,
         x: number,
         y: number
-    ) => any;
+    ) => DND.DragMotionResult;
     originalAcceptDrop: (source: DraggableActor) => boolean;
     acceptDrop: (source: DraggableActor) => boolean;
 }
 
+export interface ReorderableListSignals<T extends Clutter.Actor>
+    extends Clutter.Actor.SignalSignatures {
+    'drag-start': () => void;
+    'drag-end': () => void;
+    'actor-moved': (actor: T, index: number) => void;
+    'foreign-actor-inserted': (actor: T, index: number) => void;
+}
+
 @registerGObjectClass
-export class ReorderableList extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+export class ReorderableList<
+    T extends Clutter.Actor = Clutter.Actor
+> extends Clutter.Actor {
+    declare connect: GObject.SignalMethods<
+        this,
+        ReorderableListSignals<T>
+    >['connect'];
+    declare emit: GObject.SignalMethods<
+        this,
+        ReorderableListSignals<T>
+    >['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'ReorderableList',
         Signals: {
             'drag-start': {},
@@ -48,10 +73,13 @@ export class ReorderableList extends Clutter.Actor {
     placeHolder: DropPlaceholder;
     draggedActor: DraggableActor | null | undefined;
     vertical: boolean;
-    classAccepted: any[];
+    classAccepted: (abstract new (...args: never[]) => unknown)[];
     dragInProgress: boolean;
 
-    constructor(vertical = false, classAccepted: any[] = []) {
+    constructor(
+        vertical = false,
+        classAccepted: (abstract new (...args: never[]) => unknown)[] = []
+    ) {
         super({
             layout_manager: new Clutter.BoxLayout({
                 orientation: vertical
@@ -63,15 +91,21 @@ export class ReorderableList extends Clutter.Actor {
         this.classAccepted = classAccepted;
         this.dragInProgress = false;
         this.connect('child-added', (_, child) => {
-            if (child === this.placeHolder) return;
+            if (child === this.placeHolder) {
+                return;
+            }
             const actor = child as DraggableActor;
-            if (!actor._draggable) this.makeActorDraggable(actor);
+            if (!actor._draggable) {
+                this.makeActorDraggable(actor);
+            }
         });
 
         this.placeHolder = new DropPlaceholder();
         this.placeHolder.connect('drag-dropped', (_, source) => {
             if (source._draggable._dragActor.get_parent()) {
-                source._draggable._dragActor.get_parent().remove_child(source);
+                (
+                    source._draggable._dragActor.get_parent() as Clutter.Actor
+                ).remove_child(source);
             }
         });
     }
@@ -91,8 +125,9 @@ export class ReorderableList extends Clutter.Actor {
                 this.foreignEntered(source);
             }
             if (source === this.draggedActor || isForeignActor) {
-                if (actor.draggable != undefined && actor.draggable === false)
+                if (actor.draggable != undefined && actor.draggable === false) {
                     return DND.DragMotionResult.NO_DROP;
+                }
 
                 const actorIndex = this.get_children()
                     .filter((actor) => actor != this.placeHolder)
@@ -109,8 +144,9 @@ export class ReorderableList extends Clutter.Actor {
         };
 
         actor.acceptDrop = (source) => {
-            if (source._draggable._dragActor.get_parent()) {
-                source._draggable._dragActor.get_parent().remove_child(source);
+            const dragParent = source._draggable._dragActor.get_parent();
+            if (dragParent) {
+                dragParent.remove_child(source);
             }
             if (source === this.draggedActor || source === this.foreignActor) {
                 return true;
@@ -123,7 +159,7 @@ export class ReorderableList extends Clutter.Actor {
 
         actor._draggable = DND.makeDraggable(actor, {
             restoreOnSuccess: false,
-        });
+        }) as Draggable;
 
         if (actor instanceof MatButton) {
             // A drag and a long press start from the same press, so keep the
@@ -155,8 +191,9 @@ export class ReorderableList extends Clutter.Actor {
             const placeholderIndex = this.get_children().indexOf(
                 this.placeHolder
             );
-            if (this.placeHolder.get_parent() == this)
+            if (this.placeHolder.get_parent() == this) {
                 this.remove_child(this.placeHolder);
+            }
 
             if (this.draggedActor) {
                 reparentActor(this.draggedActor, this);
@@ -164,7 +201,7 @@ export class ReorderableList extends Clutter.Actor {
                 if (placeholderIndex !== originalIndex) {
                     this.emit(
                         'actor-moved',
-                        this.draggedActor,
+                        this.draggedActor as unknown as T,
                         placeholderIndex
                     );
                 }
@@ -189,8 +226,9 @@ export class ReorderableList extends Clutter.Actor {
         const connectCancelId = actor._draggable.connect(
             'drag-cancelled',
             () => {
-                if (this.placeHolder.get_parent() == this)
+                if (this.placeHolder.get_parent() == this) {
                     this.remove_child(this.placeHolder);
+                }
             }
         );
         const connectEndId = actor._draggable.connect('drag-end', () => {
@@ -208,15 +246,30 @@ export class ReorderableList extends Clutter.Actor {
             actor._draggable.disconnect(connectEndId);
             delete this.foreignActor;
             if (placeholderIndex !== undefined) {
-                this.emit('foreign-actor-inserted', actor, placeholderIndex);
+                this.emit(
+                    'foreign-actor-inserted',
+                    actor as unknown as T,
+                    placeholderIndex
+                );
             }
         });
     }
 }
 
+export interface DropPlaceholderSignals extends St.Widget.SignalSignatures {
+    'drag-dropped': (source: DraggableActor) => void;
+    'drag-over': () => void;
+}
+
 @registerGObjectClass
 export class DropPlaceholder extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<
+        this,
+        DropPlaceholderSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, DropPlaceholderSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'DropPlaceHolder',
         Signals: {
             'drag-dropped': {
@@ -233,13 +286,13 @@ export class DropPlaceholder extends St.Widget {
     }
 
     /// Called by gnome's drag-drop system via the _delegate field
-    handleDragOver(source: Clutter.Actor) {
+    handleDragOver(_source: Clutter.Actor) {
         return DND.DragMotionResult.MOVE_DROP;
     }
 
     /// Called by gnome's drag-drop system via the _delegate field
     acceptDrop(source: Clutter.Actor) {
-        this.emit('drag-dropped', source);
+        this.emit('drag-dropped', source as DraggableActor);
         return true;
     }
 

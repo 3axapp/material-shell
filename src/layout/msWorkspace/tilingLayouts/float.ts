@@ -96,7 +96,9 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
 
     tileAll() {
         this.msWorkspace.tileableList.forEach((tileable) => {
-            if (tileable.dragged) return;
+            if (tileable.dragged) {
+                return;
+            }
             if (tileable === this.msWorkspace.appLauncher) {
                 tileable.x = 0;
                 tileable.y = 0;

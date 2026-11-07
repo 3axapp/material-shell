@@ -33,7 +33,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     }
 
     displayTileable(actor: Tileable) {
-        if (this.translationHelper.animationInProgress) return;
+        if (this.translationHelper.animationInProgress) {
+            return;
+        }
         if (this.currentDisplayed) {
             if (
                 logAssert(
@@ -54,7 +56,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         }
         this.currentDisplayed = {
             tileable: actor,
-            destroySignal: actor.connect('destroy', () => {
+            destroySignal: (actor as Clutter.Actor).connect('destroy', () => {
                 this.currentDisplayed = null;
             }),
         };
@@ -66,7 +68,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
             'isDisplayed=' + this.msWorkspace.isDisplayed(),
             'actor=' + describeActor(actor)
         );
-        if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
+        if (this.msWorkspace.isDisplayed()) {
+            actor.grab_key_focus();
+        }
     }
 
     showAppLauncher() {

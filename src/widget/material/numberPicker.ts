@@ -3,7 +3,7 @@ import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
@@ -14,9 +14,19 @@ export interface NumberPickerParams {
     max: number;
 }
 
+export interface MatNumberPickerSignals extends St.BoxLayout.SignalSignatures {
+    changed: (value: number) => void;
+}
+
 @registerGObjectClass
 export class MatNumberPicker extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<
+        this,
+        MatNumberPickerSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, MatNumberPickerSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'MatNumberPicker',
         Signals: {
             changed: {

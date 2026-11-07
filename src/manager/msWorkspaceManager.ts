@@ -23,7 +23,12 @@ import { getSettings } from 'src/utils/settings';
 import { MetaWindowWithMsProperties } from './msWindowManager';
 import { Monitor } from 'src/utils/shellTypes';
 
-interface MsWorkspaceManagerState {
+/** Keeps gnome-shell's own _checkWorkspaces while ours is installed. */
+type WorkspaceTrackerPrototype = WindowManager.WorkspaceTracker & {
+    _oldCheckWorkspaces?: WindowManager.WorkspaceTracker['_checkWorkspaces'];
+};
+
+export interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
     primaryWorkspaceActiveIndex: number;
 }
@@ -31,7 +36,7 @@ interface MsWorkspaceManagerState {
 export class MsWorkspaceManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
     private _state: MsWorkspaceManagerState;
-    windowTracker: any;
+    windowTracker: Shell.WindowTracker;
     msWorkspaceList: MsWorkspace[];
     settings: Gio.Settings;
     metaWindowFocused: Meta.Window | null;
@@ -39,8 +44,8 @@ export class MsWorkspaceManager extends MsManager {
     primaryIndex: number;
     workspaceTracker: WindowManager.WorkspaceTracker;
     private _updatingMonitors: boolean | undefined;
-    restoringState: any;
-    stateChangedTriggered: any;
+    restoringState?: boolean;
+    stateChangedTriggered?: boolean;
 
     constructor(state = {}) {
         super();
@@ -61,17 +66,24 @@ export class MsWorkspaceManager extends MsManager {
         this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
         (
-            Main.wm._workspaceTracker.constructor.prototype as any
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
         )._oldCheckWorkspaces =
             Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces;
         Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces =
             function () {
+                if (!Main.layoutManager.primaryMonitor) {
+                    this._checkWorkspacesId = 0;
+                    return false;
+                }
                 const workspaceManager = global.workspace_manager;
                 let i;
                 const emptyWorkspaces: boolean[] = [];
                 if (!Meta.prefs_get_dynamic_workspaces()) {
                     this._checkWorkspacesId = 0;
-                    const msWorkspaceManager = global.ms.msWorkspaceManager!;
+                    const msWorkspaceManager = assertNotNull(
+                        global.ms.msWorkspaceManager
+                    );
 
                     while (
                         workspaceManager.get_n_workspaces() <
@@ -104,32 +116,37 @@ export class MsWorkspaceManager extends MsManager {
                                 lastRemoved.get_window_type() ==
                                     Meta.WindowType.MODAL_DIALOG)) ||
                         this._workspaces[i]._keepAliveId
-                    )
+                    ) {
                         emptyWorkspaces[i] = false;
-                    else emptyWorkspaces[i] = true;
+                    } else {
+                        emptyWorkspaces[i] = true;
+                    }
                 }
 
                 const sequences =
                     Shell.WindowTracker.get_default().get_startup_sequences();
                 for (i = 0; i < sequences.length; i++) {
                     const index = sequences[i].get_workspace();
-                    if (index >= 0 && index <= workspaceManager.n_workspaces)
+                    if (index >= 0 && index <= workspaceManager.n_workspaces) {
                         emptyWorkspaces[index] = false;
+                    }
                 }
 
-                const msWindowList = global.ms.msWindowManager!.msWindowList;
+                const msWindowList = assertNotNull(
+                    global.ms.msWindowManager
+                ).msWindowList;
                 for (i = 0; i < msWindowList.length; i++) {
                     const msWindow = msWindowList[i];
 
                     if (
                         msWindow.msWorkspace.monitor !=
                         Main.layoutManager.primaryMonitor
-                    )
+                    ) {
                         continue;
-                    const workspace =
-                        global.ms.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
-                            msWindow.msWorkspace
-                        );
+                    }
+                    const workspace = assertNotNull(
+                        global.ms.msWorkspaceManager
+                    ).getWorkspaceOfMsWorkspace(msWindow.msWorkspace);
                     assert(workspace !== null, 'Workspace does not exist');
                     emptyWorkspaces[workspace.index()] = false;
                 }
@@ -177,7 +194,7 @@ export class MsWorkspaceManager extends MsManager {
         });
 
         this.observe(
-            Me.msWindowManager!.msFocusManager,
+            Me.msWindowManager.msFocusManager,
             'focus-changed',
             (_, msWindow) => {
                 if (msWindow && msWindow.msWorkspace) {
@@ -199,7 +216,9 @@ export class MsWorkspaceManager extends MsManager {
             this.workspaceManager,
             'workspace-added',
             (_, workspaceIndex) => {
-                if (this.restoringState) return;
+                if (this.restoringState) {
+                    return;
+                }
                 const workspace =
                     this.workspaceManager.get_workspace_by_index(
                         workspaceIndex
@@ -236,10 +255,13 @@ export class MsWorkspaceManager extends MsManager {
     destroy() {
         super.destroy();
         Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces = (
-            Main.wm._workspaceTracker.constructor.prototype as any
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
         )._oldCheckWorkspaces;
-        delete (Main.wm._workspaceTracker.constructor.prototype as any)
-            ._oldCheckWorkspaces;
+        delete (
+            Main.wm._workspaceTracker.constructor
+                .prototype as WorkspaceTrackerPrototype
+        )._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
             const workspace = this.workspaceManager.get_workspace_by_index(
@@ -359,9 +381,11 @@ export class MsWorkspaceManager extends MsManager {
 
         for (let i = 0; i < windows.length; i++) {
             const actor = windows[i];
-            const win = actor.get_meta_window()!;
+            const win = assertNotNull(actor.get_meta_window());
 
-            if (win.is_on_all_workspaces()) continue;
+            if (win.is_on_all_workspaces()) {
+                continue;
+            }
 
             const workspaceIndex = win.get_workspace().index();
             emptyWorkspacesSlots[workspaceIndex] = false;
@@ -384,9 +408,12 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     onMonitorsChanged(): void {
-        this._updatingMonitors = true;
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
+        if (!Main.layoutManager.primaryMonitor) {
+            return;
+        }
+        this._updatingMonitors = true;
         // First manage external screen
         const externalMonitors: Monitor[] = Main.layoutManager.monitors.filter(
             (monitor: Monitor) => monitor != Main.layoutManager.primaryMonitor
@@ -443,7 +470,7 @@ export class MsWorkspaceManager extends MsManager {
 
                     // Try to find an unused monitor;
                     const availableMonitor = Main.layoutManager.monitors.find(
-                        (monitor: any) => {
+                        (monitor) => {
                             return (
                                 monitor != Main.layoutManager.primaryMonitor &&
                                 !this.msWorkspaceList.find((msWorkspace) => {
@@ -498,7 +525,9 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     get primaryMsWorkspaces(): MsWorkspace[] {
-        if (!this.msWorkspaceList) return [];
+        if (!this.msWorkspaceList) {
+            return [];
+        }
         return this.msWorkspaceList.filter((msWorkspace) => {
             return !msWorkspace.monitorIsExternal;
         });
@@ -526,7 +555,7 @@ export class MsWorkspaceManager extends MsManager {
             this.stateChanged();
         });
         msWorkspace.connect('tiling-layout-changed', (_) => {
-            Me.stateManager!.stateChanged();
+            Me.stateManager.stateChanged();
         });
         msWorkspace.connect('readyToBeClosed', () => {
             const index = this.primaryMsWorkspaces.indexOf(msWorkspace);
@@ -565,12 +594,13 @@ export class MsWorkspaceManager extends MsManager {
             this.restoringState ||
             this.updatingMonitors ||
             this.stateChangedTriggered
-        )
+        ) {
             return;
+        }
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.workspaceTracker._checkWorkspaces();
-            Me.stateManager!.stateChanged();
+            Me.stateManager.stateChanged();
             this.stateChangedTriggered = false;
             return GLib.SOURCE_REMOVE;
         });
@@ -624,7 +654,7 @@ export class MsWorkspaceManager extends MsManager {
         const msWorkspace =
             currentMonitorIndex === Main.layoutManager.primaryIndex
                 ? this.primaryMsWorkspaces[activeWorkspaceIndex]
-                : Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
+                : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                       currentMonitorIndex
                   )[0];
         return msWorkspace;
@@ -688,11 +718,14 @@ export class MsWorkspaceManager extends MsManager {
         if (
             this.updatingMonitors ||
             !(metaWindow.get_compositor_private() as Meta.WindowActor)
-        )
+        ) {
             return;
+        }
 
         const msWindow = metaWindow.msWindow;
-        if (!msWindow) return;
+        if (!msWindow) {
+            return;
+        }
 
         const msWorkspace = this.primaryMsWorkspaces[workspace.index()];
         if (
@@ -730,7 +763,9 @@ export class MsWorkspaceManager extends MsManager {
         metaWindow: MetaWindowWithMsProperties,
         monitorIndex: number
     ) {
-        if (this.updatingMonitors) return;
+        if (this.updatingMonitors) {
+            return;
+        }
 
         const currentMsWorkspaceOfMetaWindow = metaWindow.msWindow
             ? metaWindow.msWindow.msWorkspace
@@ -857,7 +892,9 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     focusMsWorkspace(msWorkspace: MsWorkspace) {
-        if (!msWorkspace) return;
+        if (!msWorkspace) {
+            return;
+        }
         const backend = Clutter.get_default_backend();
         const seat = backend.get_default_seat();
         const [containerX, containerY] =

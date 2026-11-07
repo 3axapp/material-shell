@@ -8,29 +8,29 @@ import St from 'gi://St';
  * tileableContainer and MsWindow are plain Clutter actors, while HorizontalPanel
  * and MsWindowContent are not.
  */
-export function invalidate_style_recursively(actor: Clutter.Actor) {
+export function invalidateStyleRecursively(actor: Clutter.Actor) {
     if (actor instanceof St.Widget) {
         actor.style_changed();
         return;
     }
     for (const child of actor.get_children()) {
-        invalidate_style_recursively(child);
+        invalidateStyleRecursively(child);
     }
 }
 
 /** Sets whether the widget has the given style class */
-export function set_style_class(
+export function setStyleClass(
     widget: St.Widget,
-    style_class: string,
+    styleClass: string,
     enabled: boolean
 ) {
     if (enabled) {
-        if (!widget.has_style_class_name(style_class)) {
-            widget.add_style_class_name(style_class);
+        if (!widget.has_style_class_name(styleClass)) {
+            widget.add_style_class_name(styleClass);
         }
     } else {
-        if (widget.has_style_class_name(style_class)) {
-            widget.remove_style_class_name(style_class);
+        if (widget.has_style_class_name(styleClass)) {
+            widget.remove_style_class_name(styleClass);
         }
     }
 }

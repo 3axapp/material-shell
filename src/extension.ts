@@ -31,6 +31,7 @@ let modules: { destroy(): void }[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
 let _closingId: number | undefined;
+let _monitorsChangedId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
 const oldOverview = Main.overview;
@@ -45,6 +46,9 @@ export default class MaterialShellExtension
         ) as MaterialShellExtension;
     }
 
+    /* The managers are created in enable(); these getters assume the caller
+     * runs after that */
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     static get stateManager() {
         return this.instance.stateManager!;
     }
@@ -73,15 +77,16 @@ export default class MaterialShellExtension
     static get hotKeysModule() {
         return this.instance.hotKeysModule!;
     }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     disableInProgress: boolean | undefined;
-    emit(name: string, ...params: any[]): void {
+    emit(_name: string, ..._params: unknown[]): void {
         throw new Error('Method not implemented.');
     }
-    connect(name: string, callback: (...params: any[]) => void): number {
+    connect(_name: string, _callback: (...params: never[]) => void): number {
         throw new Error('Method not implemented.');
     }
-    disconnect(id: number): void {
+    disconnect(_id: number): void {
         throw new Error('Method not implemented.');
     }
 
@@ -134,35 +139,42 @@ export default class MaterialShellExtension
 
             //Load persistent data
             this.stateManager?.loadRegistry((state) => {
-                modules = [new RequiredSettingsModule(), new OverrideModule()];
-                this.tooltipManager = new TooltipManager();
-                this.layoutManager = new LayoutManager();
-                this.msWindowManager = new MsWindowManager();
-                this.msWorkspaceManager = new MsWorkspaceManager(
-                    state['workspaces-state']
-                );
-                this.msNotificationManager = new MsNotificationManager();
-                modules = [
-                    ...modules,
-                    (this.hotKeysModule = new HotKeysModule()),
-                ];
-                this.msThemeManager = new MsThemeManager();
-                this.msThemeManager.regenerateStylesheet();
-                if (getSettings('tweaks').get_boolean('enable-persistence')) {
-                    this.msWorkspaceManager.restorePreviousState();
-                } else {
-                    this.msWorkspaceManager.initState();
-                }
-                this.layout = new MsMain();
-                this.msWindowManager.handleExistingMetaWindows();
-                if (Main.layoutManager._startingUp) {
-                    _startupPreparedId = Main.layoutManager.connect(
-                        'startup-complete',
-                        () => this.load(true)
+                this.whenPrimaryMonitorExists(() => {
+                    modules = [
+                        new RequiredSettingsModule(),
+                        new OverrideModule(),
+                    ];
+                    this.tooltipManager = new TooltipManager();
+                    this.layoutManager = new LayoutManager();
+                    this.msWindowManager = new MsWindowManager();
+                    this.msWorkspaceManager = new MsWorkspaceManager(
+                        state['workspaces-state']
                     );
-                } else {
-                    this.load(false);
-                }
+                    this.msNotificationManager = new MsNotificationManager();
+                    modules = [
+                        ...modules,
+                        (this.hotKeysModule = new HotKeysModule()),
+                    ];
+                    this.msThemeManager = new MsThemeManager();
+                    this.msThemeManager.regenerateStylesheet();
+                    if (
+                        getSettings('tweaks').get_boolean('enable-persistence')
+                    ) {
+                        this.msWorkspaceManager.restorePreviousState();
+                    } else {
+                        this.msWorkspaceManager.initState();
+                    }
+                    this.layout = new MsMain();
+                    this.msWindowManager.handleExistingMetaWindows();
+                    if (Main.layoutManager._startingUp) {
+                        _startupPreparedId = Main.layoutManager.connect(
+                            'startup-complete',
+                            () => this.load(true)
+                        );
+                    } else {
+                        this.load(false);
+                    }
+                });
             });
             return GLib.SOURCE_REMOVE;
         });
@@ -178,7 +190,24 @@ export default class MaterialShellExtension
         } else {
             this.disableInProgress = true;
             Async.clearAllPendingTimeout();
-            if (!modules) return;
+            if (_monitorsChangedId !== undefined) {
+                // Still waiting for a monitor: only what enable() sets up
+                // before the wait exists, and the wait itself must not fire
+                // once the extension is off.
+                Main.layoutManager.disconnect(_monitorsChangedId);
+                _monitorsChangedId = undefined;
+                if (_closingId !== undefined) {
+                    global.display.disconnect(_closingId);
+                    _closingId = undefined;
+                }
+                disableIncompatibleExtensionsModule.destroy();
+                this.stateManager?.destroy();
+                delete this.disableInProgress;
+                return;
+            }
+            if (!modules) {
+                return;
+            }
             if (_closingId !== undefined) {
                 global.display.disconnect(_closingId);
             }
@@ -203,6 +232,29 @@ export default class MaterialShellExtension
         log('---------------------');
     }
 
+    /**
+     * Everything Material Shell builds hangs off the primary monitor, but
+     * gnome-shell may start before there is one: the nested devkit shell always
+     * does, and so does a session whose only screen is plugged in later. Wait
+     * for the first monitor instead of failing to enable.
+     */
+    whenPrimaryMonitorExists(callback: () => void) {
+        if (Main.layoutManager.primaryMonitor) {
+            callback();
+            return;
+        }
+        log('No monitor yet, waiting for one before building the interface');
+        const id = Main.layoutManager.connect('monitors-changed', () => {
+            if (!Main.layoutManager.primaryMonitor) {
+                return;
+            }
+            Main.layoutManager.disconnect(id);
+            _monitorsChangedId = undefined;
+            callback();
+        });
+        _monitorsChangedId = id;
+    }
+
     load(disconnect: boolean) {
         log('----------------');
         log('EXTENSION LOADED');
@@ -212,7 +264,9 @@ export default class MaterialShellExtension
         }
         this.loaded = true;
         this.locked = false;
-        if (oldOverview.visible) oldOverview.toggle();
+        if (oldOverview.visible) {
+            oldOverview.toggle();
+        }
         oldOverview.isDummy = true;
         this.emit('extension-loaded');
         this.msNotificationManager?.check();
@@ -265,7 +319,9 @@ export default class MaterialShellExtension
     }
 
     hideSplashScreens() {
-        if (splashScreens.length < 1) return GLib.SOURCE_REMOVE;
+        if (splashScreens.length < 1) {
+            return GLib.SOURCE_REMOVE;
+        }
         splashScreens.forEach((splashscreen) => {
             splashscreen.ease({
                 opacity: 0,

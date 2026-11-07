@@ -10,10 +10,10 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { diffLists } from 'src/utils/diff_list';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
-import { MatButton } from 'src/widget/material/button';
+import { MatButton, MatButtonSignals } from 'src/widget/material/button';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { ReorderableList } from 'src/widget/reorderableList';
 
@@ -22,18 +22,17 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
-import { Monitor } from 'src/utils/shellTypes';
 
-const isTileableItem = (obj: any): obj is TileableItem => {
+const isTileableItem = (obj: unknown): obj is TileableItem => {
     return obj instanceof TileableItem;
 };
 
-const isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
+const isIconTaskBarItem = (obj: unknown): obj is IconTaskBarItem => {
     return obj instanceof IconTaskBarItem;
 };
 
 const isTileableItemOrIconTaskBarItem = (
-    obj: any
+    obj: unknown
 ): obj is TileableItem | IconTaskBarItem => {
     return isTileableItem(obj) || isIconTaskBarItem(obj);
 };
@@ -41,7 +40,7 @@ const isTileableItemOrIconTaskBarItem = (
 export class TaskBar extends St.Widget {
     override _delegate: this;
     taskActiveIndicator: TaskActiveIndicator;
-    taskButtonContainer: ReorderableList;
+    taskButtonContainer: ReorderableList<TileableItem | IconTaskBarItem>;
     msWorkspace: MsWorkspace;
     msWorkspaceSignals: number[];
     tracker: Shell.WindowTracker;
@@ -71,28 +70,22 @@ export class TaskBar extends St.Widget {
             'foreign-actor-inserted',
             (_, actor, index) => {
                 if (actor.tileable instanceof MsWindow) {
-                    Me.msWorkspaceManager!.setWindowToMsWorkspace(
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
                         actor.tileable,
                         this.msWorkspace
                     );
                     this.msWorkspace.setTileableAtIndex(actor.tileable, index);
                     this.msWorkspace.focusTileable(actor.tileable);
-                    Me.msWorkspaceManager!.stateChanged();
+                    Me.msWorkspaceManager.stateChanged();
                 }
             }
         );
-        this.taskButtonContainer.connect(
-            'drag-start',
-            (_, _actor, _foreignActor) => {
-                this.taskActiveIndicator.hide();
-            }
-        );
-        this.taskButtonContainer.connect(
-            'drag-end',
-            (_, _actor, _foreignActor) => {
-                this.taskActiveIndicator.show();
-            }
-        );
+        this.taskButtonContainer.connect('drag-start', () => {
+            this.taskActiveIndicator.hide();
+        });
+        this.taskButtonContainer.connect('drag-end', () => {
+            this.taskActiveIndicator.show();
+        });
         this.add_child(this.taskButtonContainer);
         this.msWorkspace = msWorkspace;
         this.connect('destroy', this._onDestroy.bind(this));
@@ -187,7 +180,9 @@ export class TaskBar extends St.Widget {
             }
         }
 
-        if (!nextItem) return;
+        if (!nextItem) {
+            return;
+        }
 
         //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
@@ -214,10 +209,14 @@ export class TaskBar extends St.Widget {
             item = new TileableItem(tileable);
             this.menuManager.addMenu(assertNotNull(item.menu));
             item.connect('middle-clicked', (_) => {
-                if (item.tileable instanceof MsWindow) item.tileable.kill();
+                if (item.tileable instanceof MsWindow) {
+                    item.tileable.kill();
+                }
             });
             item.connect('close-clicked', (_) => {
-                if (item.tileable instanceof MsWindow) item.tileable.kill();
+                if (item.tileable instanceof MsWindow) {
+                    item.tileable.kill();
+                }
             });
         } else {
             item = new IconTaskBarItem(
@@ -227,7 +226,7 @@ export class TaskBar extends St.Widget {
                 )
             );
         }
-        item.connect('left-clicked', (_) => {
+        (item as TaskBarItem).connect('left-clicked', (_) => {
             this.msWorkspace.focusTileable(item.tileable);
         });
         return item;
@@ -270,11 +269,11 @@ export class TaskBar extends St.Widget {
 
 @registerGObjectClass
 export class TaskActiveIndicator extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskActiveIndicator',
     };
 
-    constructor(...args: any[]) {
+    constructor(...args: ConstructorParameters<typeof St.Widget>) {
         super(...args);
     }
 
@@ -306,9 +305,19 @@ export class TaskActiveIndicator extends St.Widget {
     }
 }
 
+export interface TaskBarItemSignals extends MatButtonSignals {
+    'drag-dropped': () => void;
+    'drag-over': (over: boolean) => void;
+    'left-clicked': () => void;
+    'middle-clicked': () => void;
+}
+
 @registerGObjectClass
 export class TaskBarItem extends MatButton {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<this, TaskBarItemSignals>['connect'];
+    declare emit: GObject.SignalMethods<this, TaskBarItemSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'TaskBarItem',
         Signals: {
             'drag-dropped': {},
@@ -322,7 +331,6 @@ export class TaskBarItem extends MatButton {
     override _delegate: this;
     draggable: boolean;
     contentActor: St.Widget;
-    monitor: Monitor;
     menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 
@@ -334,7 +342,6 @@ export class TaskBarItem extends MatButton {
         this._delegate = this;
         this.draggable = draggable;
         this.contentActor = contentActor;
-        this.monitor = assertNotNull(Main.layoutManager.primaryMonitor);
         this.set_child(this.contentActor);
 
         this.connect('primary-action', () => {
@@ -352,17 +359,8 @@ export class TaskBarItem extends MatButton {
         });
     }
 
-    override vfunc_parent_set() {
-        const actor = this.get_parent() || this;
-        if (actor.is_mapped()) {
-            this.monitor = assertNotNull(
-                Main.layoutManager.findMonitorForActor(actor)
-            );
-        }
-    }
-
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager!.getPanelSize();
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 
@@ -376,9 +374,19 @@ export class TaskBarItem extends MatButton {
     }
 }
 
+export interface TileableItemSignals extends TaskBarItemSignals {
+    'close-clicked': () => void;
+}
+
 @registerGObjectClass
 export class TileableItem extends TaskBarItem {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<
+        this,
+        TileableItemSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, TileableItemSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'TileableItem',
         Signals: {
             'close-clicked': {},
@@ -478,7 +486,7 @@ export class TileableItem extends TaskBarItem {
             style_class: 'task-bar-item-title',
             y_align: Clutter.ActorAlign.CENTER,
         });
-        Me.tooltipManager!.add(this.title, { relativeActor: this });
+        Me.tooltipManager.add(this.title, { relativeActor: this });
 
         this.signalManager = new MsManager();
         this.style = getSettings('theme').get_string('taskbar-item-style');
@@ -525,8 +533,12 @@ export class TileableItem extends TaskBarItem {
     }
 
     setTileable(tileable: Tileable) {
-        if (tileable === this.tileable) return;
-        if (this.titleSignalKiller) this.titleSignalKiller();
+        if (tileable === this.tileable) {
+            return;
+        }
+        if (this.titleSignalKiller) {
+            this.titleSignalKiller();
+        }
         this.tileable = tileable;
         this.app = tileable instanceof MsWindow ? tileable.app : null;
         if (this.icon) {
@@ -559,7 +571,9 @@ export class TileableItem extends TaskBarItem {
     }
 
     buildIcon(height: number) {
-        if (this.icon) this.icon.destroy();
+        if (this.icon) {
+            this.icon.destroy();
+        }
         assert(this.app !== null, 'cannot build an icon without an app');
         this.lastHeight = height;
         const icon = this.app.create_icon_texture(height / 2);
@@ -589,7 +603,7 @@ export class TileableItem extends TaskBarItem {
             this.title.text = '';
         } else {
             if (this.style == 'full') {
-                if (this.tileable.title!.includes(this.app.get_name()!)) {
+                if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
                     const escapedAppName = GLib.markup_escape_text(
@@ -622,7 +636,9 @@ export class TileableItem extends TaskBarItem {
     _onDestroy() {
         this.buildIconIdle.cancel();
         this.signalManager.destroy();
-        if (this.menu !== undefined) this.menu.destroy();
+        if (this.menu !== undefined) {
+            this.menu.destroy();
+        }
     }
 }
 
@@ -646,7 +662,7 @@ export class IconTaskBarItem extends TaskBarItem {
         this.icon = new St.Icon({
             gicon,
             style_class: 'app-icon',
-            icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
+            icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
         this.tileable = tileable;
@@ -654,7 +670,9 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     setTileable(tileable: Tileable) {
-        if (tileable === this.tileable) return;
+        if (tileable === this.tileable) {
+            return;
+        }
         this.tileable = tileable;
     }
 
@@ -663,7 +681,7 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     vfunc_allocate(box: Clutter.ActorBox) {
-        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
             this.buildIconIdle.schedule(height);

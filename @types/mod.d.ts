@@ -81,7 +81,7 @@ declare namespace Gtk {
     }
 }
 
-declare module '@girs/clutter-18/clutter-18' {
+declare module '@girs/clutter-51/clutter-51' {
     export namespace Clutter {
         // Existed in older versions of Clutter, kept for the vfunc signatures.
         // eslint-disable-next-line @typescript-eslint/no-empty-interface

@@ -195,7 +195,9 @@ export class Portion {
      */
     rotateRight() {
         const firstChild = this.children.shift();
-        if (firstChild) this.children.push(firstChild);
+        if (firstChild) {
+            this.children.push(firstChild);
+        }
         this.updateBorders();
     }
 
@@ -204,7 +206,9 @@ export class Portion {
      */
     rotateLeft() {
         const lastChild = this.children.pop();
-        if (lastChild) this.children.splice(0, 0, lastChild);
+        if (lastChild) {
+            this.children.splice(0, 0, lastChild);
+        }
         this.updateBorders();
     }
 

@@ -3,13 +3,13 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
+import type GObject from 'gi://GObject';
 import St from 'gi://St';
 import { throttle } from 'src/utils';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
 import { ProviderResultList } from './search/ProviderResultList';
@@ -30,7 +30,9 @@ import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/paren
 
 function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
-    if (searchString === '') return [];
+    if (searchString === '') {
+        return [];
+    }
     return searchString.split(/\s+/);
 }
 const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
@@ -38,9 +40,19 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 /** Extension imports */
 import { default as Me } from 'src/extension';
 
+export interface SearchResultListSignals extends St.BoxLayout.SignalSignatures {
+    'result-selected-changed': (entry: SearchResultEntry) => void;
+}
+
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<
+        this,
+        SearchResultListSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, SearchResultListSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'SearchResultList',
         Signals: {
             'result-selected-changed': {
@@ -123,7 +135,7 @@ export class SearchResultList extends St.BoxLayout {
         );
 
         this.parentalControlsManager = ParentalControlsManager.getDefault();
-        this.parentalControlsManager.connect(
+        (this.parentalControlsManager as unknown as WithSignals).connect(
             'app-filter-changed',
             this.reloadRemoteProviders.bind(this)
         );
@@ -195,15 +207,16 @@ export class SearchResultList extends St.BoxLayout {
         if (
             provider instanceof RemoteSearchProvider &&
             !this.parentalControlsManager.shouldShowApp(provider.appInfo)
-        )
+        ) {
             return;
+        }
 
         this.providerList.push(provider);
         const providerDisplay = new ProviderResultList(provider, (id) => {
             // It's important that we do this first because it will remove the focus grab that we use.
             // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
             // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-            Me.layout!.toggleOverview();
+            Me.layout.toggleOverview();
             let remappedProvider = provider;
 
             if (remappedProvider === this.recentSearchProvider) {
@@ -249,15 +262,18 @@ export class SearchResultList extends St.BoxLayout {
         const index = this.providerList.indexOf(provider);
         this.providerList.splice(index, 1);
 
-        if (this.providerDisplayMap.has(provider)) {
-            this.providerDisplayMap.get(provider)!.destroy();
+        const providerDisplay = this.providerDisplayMap.get(provider);
+        if (providerDisplay !== undefined) {
+            providerDisplay.destroy();
             this.providerDisplayMap.delete(provider);
         }
     }
 
     onTextChanged(): void {
-        const terms = getTermsForSearchString(this.searchEntry.get_text()!);
-        if (terms == this.terms) return;
+        const terms = getTermsForSearchString(this.searchEntry.get_text());
+        if (terms == this.terms) {
+            return;
+        }
         const searchActive = terms.length > 0;
         this.setTerms(terms);
 
@@ -322,8 +338,9 @@ export class SearchResultList extends St.BoxLayout {
         const resultsMetas = await provider
             .getResultMetas(results, this.cancellable)
             .catch(logAsyncException);
-        if (resultsMetas !== undefined)
+        if (resultsMetas !== undefined) {
             this.updateResults(provider, resultsMetas);
+        }
     }
 
     private async doSearch() {
@@ -366,7 +383,9 @@ export class SearchResultList extends St.BoxLayout {
         // text and one for the new one - the second one is handled
         // incorrectly when we remove focus
         // (https://bugzilla.gnome.org/show_bug.cgi?id=636341) */
-        if (this.text.text !== '') this.reset();
+        if (this.text.text !== '') {
+            this.reset();
+        }
     }
 
     setTerms(terms: string[]): void {
@@ -378,7 +397,9 @@ export class SearchResultList extends St.BoxLayout {
         // search while the previous search is still active.
         const searchString = terms.join(' ');
         const previousSearchString = this.terms.join(' ');
-        if (searchString == previousSearchString) return;
+        if (searchString == previousSearchString) {
+            return;
+        }
         this.startingSearch = true;
 
         this.cancellable.cancel();
@@ -390,24 +411,28 @@ export class SearchResultList extends St.BoxLayout {
         }
 
         let isSubSearch = false;
-        if (this.terms.length > 0)
+        if (this.terms.length > 0) {
             isSubSearch = searchString.indexOf(previousSearchString) == 0;
+        }
 
         this.terms = terms;
         this.isSubSearch = isSubSearch;
 
-        if (this.searchTimeoutId == 0)
+        if (this.searchTimeoutId == 0) {
             this.searchTimeoutId = Async.addTimeout(
                 GLib.PRIORITY_DEFAULT,
                 150,
                 this.onSearchTimeout.bind(this)
             );
+        }
     }
 
     updateResults(provider: ReactiveSearchProvider, results: ResultMeta[]) {
         const terms = this.terms;
         const display = this.providerDisplayMap.get(provider);
-        if (!display) return;
+        if (!display) {
+            return;
+        }
 
         display
             .updateSearch(results, terms)
@@ -436,7 +461,7 @@ export class SearchResultList extends St.BoxLayout {
             .filter((appInfo) => {
                 try {
                     const _ = appInfo.get_id(); // catch invalid file encodings
-                } catch (e) {
+                } catch (_e) {
                     return false;
                 }
                 return (
@@ -447,7 +472,7 @@ export class SearchResultList extends St.BoxLayout {
                 );
             })
             .sort((a, b) =>
-                a.get_display_name()!.localeCompare(b.get_display_name()!)
+                a.get_display_name().localeCompare(b.get_display_name())
             );
 
         for (const appInfo of appsInstalled) {
@@ -458,9 +483,9 @@ export class SearchResultList extends St.BoxLayout {
 
             const entry = new SearchResultEntry(
                 icon,
-                appInfo.get_display_name()!,
+                appInfo.get_display_name(),
                 // The remote search provider also provides a description field, but the app search does not
-                appInfo.get_description()!,
+                appInfo.get_description(),
                 true
             );
             entry.connect('primary-action', () => {
@@ -470,12 +495,12 @@ export class SearchResultList extends St.BoxLayout {
                 this.resetAndClose();
 
                 const app = Shell.AppSystem.get_default().lookup_app(
-                    appInfo.get_id()!
+                    assertNotNull(appInfo.get_id())
                 );
                 if (app) {
-                    Me.msWindowManager!.openApp(
+                    Me.msWindowManager.openApp(
                         app,
-                        Me.msWorkspaceManager!.getActiveMsWorkspace()
+                        Me.msWorkspaceManager.getActiveMsWorkspace()
                     );
                 }
             });
@@ -542,6 +567,6 @@ export class SearchResultList extends St.BoxLayout {
 
     resetAndClose() {
         this.reset();
-        Me.layout!.toggleOverview();
+        Me.layout.toggleOverview();
     }
 }

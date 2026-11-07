@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
@@ -11,7 +10,7 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
-import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { describeActor, describeFocusWindow, probe } from 'src/utils/probe10';
 import { getSettings } from 'src/utils/settings';
@@ -94,13 +93,12 @@ export class MsWorkspace extends WithSignals {
                 focusedIndex: 0,
                 forcedCategory: null,
                 msWindowList: [],
-                layoutStateList: Me.layoutManager!.defaultLayoutKeyList.map(
+                layoutStateList: Me.layoutManager.defaultLayoutKeyList.map(
                     (layoutKey) => {
-                        return Me.layoutManager!.getLayoutByKey(layoutKey)
-                            .state;
+                        return Me.layoutManager.getLayoutByKey(layoutKey).state;
                     }
                 ),
-                layoutKey: Me.layoutManager!.defaultLayoutKey,
+                layoutKey: Me.layoutManager.defaultLayoutKey,
             },
             state
         );
@@ -148,7 +146,7 @@ export class MsWorkspace extends WithSignals {
             // Note: lookup_app can return null even though the type definitions don't say that.
             const app: Shell.App | null = appSys.lookup_app(msWindowData.appId);
             if (app) {
-                Me.msWindowManager!.createNewMsWindow(
+                Me.msWindowManager.createNewMsWindow(
                     app,
                     {
                         msWorkspace: this,
@@ -211,7 +209,7 @@ export class MsWorkspace extends WithSignals {
 
     private set focusedIndex(index) {
         this._state.focusedIndex = index;
-        Me.stateManager!.stateChanged();
+        Me.stateManager.stateChanged();
     }
 
     get state(): MsWorkspaceState {
@@ -261,7 +259,9 @@ export class MsWorkspace extends WithSignals {
     }
 
     get workspace() {
-        if (this.monitorIsExternal) return null;
+        if (this.monitorIsExternal) {
+            return null;
+        }
         return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
     }
 
@@ -289,7 +289,7 @@ export class MsWorkspace extends WithSignals {
         msWindow.setMsWorkspace(this);
         try {
             return await this.addMsWindowUnchecked(msWindow, focus, insert);
-        } catch (e) {
+        } catch (_e) {
             return Debug.logWithStackTrace('addMsWindowUnchecked failed');
         }
     }
@@ -331,7 +331,9 @@ export class MsWorkspace extends WithSignals {
     async removeMsWindow(msWindow: MsWindow) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
-        if (this.msWindowList.indexOf(msWindow) === -1) return;
+        if (this.msWindowList.indexOf(msWindow) === -1) {
+            return;
+        }
         const oldFocused = this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         this.tileableList.splice(tileableIndex, 1);
@@ -425,7 +427,9 @@ export class MsWorkspace extends WithSignals {
 
     swapTileableLeft(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
-        if (index === -1) return;
+        if (index === -1) {
+            return;
+        }
         if (index > 0 && tileable != this.appLauncher) {
             const previousTileable = this.tileableList[index - 1];
             this.swapTileable(tileable, previousTileable);
@@ -435,7 +439,9 @@ export class MsWorkspace extends WithSignals {
 
     swapTileableRight(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
-        if (index === -1) return;
+        if (index === -1) {
+            return;
+        }
         if (
             index < this.tileableList.length - 1 &&
             tileable != this.appLauncher
@@ -487,7 +493,9 @@ export class MsWorkspace extends WithSignals {
 
     focusPreviousTileableFromHistory() {
         const toFocus = this.popTileableFromFocusHistory();
-        if (toFocus !== undefined) this.focusTileable(toFocus);
+        if (toFocus !== undefined) {
+            this.focusTileable(toFocus);
+        }
     }
 
     private maintainTileableFocusHistory() {
@@ -498,8 +506,9 @@ export class MsWorkspace extends WithSignals {
             }
         }
 
-        while (this.focusHistory.length > MAX_FOCUS_HISTORY_LENGTH)
+        while (this.focusHistory.length > MAX_FOCUS_HISTORY_LENGTH) {
             this.focusHistory.splice(0, 1);
+        }
     }
 
     private pushTileableToFocusHistory(tileable: Tileable) {
@@ -525,7 +534,9 @@ export class MsWorkspace extends WithSignals {
         }
 
         const newFocusIndex = this.tileableList.indexOf(tileable);
-        if (newFocusIndex === -1) return;
+        if (newFocusIndex === -1) {
+            return;
+        }
 
         const oldTileableFocused = this.tileableFocused;
         if (
@@ -554,7 +565,9 @@ export class MsWorkspace extends WithSignals {
         }
 
         const focused = this.tileableFocused;
-        if (focused !== null) focused.grab_key_focus();
+        if (focused !== null) {
+            focused.grab_key_focus();
+        }
     }
 
     setTileableAtIndex(tileableToMove: Tileable, index: number) {
@@ -595,7 +608,7 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        this.layout = Me.layoutManager!.createLayout(
+        this.layout = Me.layoutManager.createLayout(
             this,
             assertNotNull(
                 this.state.layoutStateList.find(
@@ -610,8 +623,8 @@ export class MsWorkspace extends WithSignals {
     shouldPanelBeVisible() {
         return !this.containFullscreenWindow &&
             this.msWorkspaceManager &&
-            Me.layout!
-            ? Me.layout!.panelsVisible
+            Me.layout
+            ? Me.layout.panelsVisible
             : true;
     }
 
@@ -631,7 +644,9 @@ export class MsWorkspace extends WithSignals {
 
     activate() {
         const workspace = this.workspace;
-        if (workspace === null) return;
+        if (workspace === null) {
+            return;
+        }
 
         probe(
             'activate mon' + this.monitor.index,
@@ -679,7 +694,7 @@ export class MsWorkspace extends WithSignals {
 
 @registerGObjectClass
 export class MsWorkspaceActor extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsWorkspaceActor',
     };
     tileableContainer: Clutter.Actor;
@@ -705,6 +720,9 @@ export class MsWorkspaceActor extends Clutter.Actor {
     }
 
     updateUI() {
+        if (!Main.layoutManager.monitors.includes(this.msWorkspace.monitor)) {
+            return;
+        }
         const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
             this.msWorkspace.monitor.index
         );
@@ -718,7 +736,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
-        const panelPosition = Me.msThemeManager!.horizontalPanelPosition;
+        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         const panelHeight = (
             this.panel.get_preferred_height(-1) as [number, number]
         )[1];

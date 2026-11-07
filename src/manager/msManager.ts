@@ -25,7 +25,7 @@ export class MsManager extends WithSignals {
     ) {
         const signal = {
             from: subject,
-            id: subject.connect(property, callback),
+            id: (subject as WithSignals).connect(property, callback),
         };
         this.signals.push(signal);
         if (subject instanceof Clutter.Actor) {
@@ -42,7 +42,7 @@ export class MsManager extends WithSignals {
             if (signal.from) {
                 try {
                     signal.from.disconnect(signal.id);
-                } catch (error) {
+                } catch (_error) {
                     Debug.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from

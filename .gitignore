@@ -4,3 +4,5 @@ dist.zip
 dist/
 build/
 .idea/
+docs/superpowers
+logs/

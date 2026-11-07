@@ -63,8 +63,8 @@ export class ExtendedPanelContent extends St.BoxLayout {
 
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         const desiredWidth =
-            Me.msThemeManager!.getScaledSize(448) -
-            Me.msThemeManager!.getPanelSize();
+            Me.msThemeManager.getScaledSize(448) -
+            Me.msThemeManager.getPanelSize();
         return [desiredWidth, desiredWidth];
     }
 }
@@ -74,10 +74,10 @@ export class SearchEntryBin extends St.Bin {
     constructor(params = {}) {
         super(params);
     }
-    override vfunc_get_preferred_height(_for_width: number): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const height = Math.max(
-            Me.msThemeManager!.getScaledSize(48),
-            Me.msThemeManager!.getPanelSize()
+            Me.msThemeManager.getScaledSize(48),
+            Me.msThemeManager.getPanelSize()
         );
         return [height, height];
     }

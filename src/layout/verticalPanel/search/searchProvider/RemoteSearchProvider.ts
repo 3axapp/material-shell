@@ -88,11 +88,13 @@ export function loadRemoteSearchProviders(
 
         try {
             keyfile.load_from_file(path as string, 0);
-        } catch (e) {
+        } catch (_e) {
             return;
         }
 
-        if (!keyfile.has_group(KEY_FILE_GROUP)) return;
+        if (!keyfile.has_group(KEY_FILE_GROUP)) {
+            return;
+        }
 
         let remoteProvider;
         try {
@@ -100,14 +102,18 @@ export function loadRemoteSearchProviders(
             const busName = keyfile.get_string(group, 'BusName');
             const objectPath = keyfile.get_string(group, 'ObjectPath');
 
-            if (objectPaths[objectPath!]) return;
+            if (objectPaths[objectPath]) {
+                return;
+            }
 
             let appInfo = null;
             try {
                 const desktopId = keyfile.get_string(group, 'DesktopId');
                 appInfo = GioUnix.DesktopAppInfo.new(desktopId);
-                if (!appInfo.should_show()) return;
-            } catch (e) {
+                if (!appInfo.should_show()) {
+                    return;
+                }
+            } catch (_e) {
                 log(`Ignoring search provider ${path}: missing DesktopId`);
                 return;
             }
@@ -115,31 +121,32 @@ export function loadRemoteSearchProviders(
             let autoStart = true;
             try {
                 autoStart = keyfile.get_boolean(group, 'AutoStart');
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
             let version = '1';
             try {
-                version = keyfile.get_string(group, 'Version')!;
-            } catch (e) {
+                version = keyfile.get_string(group, 'Version') ?? version;
+            } catch (_e) {
                 // ignore error
             }
 
-            if (parseInt(version) >= 2)
+            if (parseInt(version) >= 2) {
                 remoteProvider = new RemoteSearchProvider2(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
-            else
+            } else {
                 remoteProvider = new RemoteSearchProvider(
                     appInfo,
-                    busName!,
-                    objectPath!,
+                    busName,
+                    objectPath,
                     autoStart
                 );
+            }
 
             remoteProvider.defaultEnabled = true;
             try {
@@ -147,18 +154,20 @@ export function loadRemoteSearchProviders(
                     group,
                     'DefaultDisabled'
                 );
-            } catch (e) {
+            } catch (_e) {
                 // ignore error
             }
 
-            objectPaths[objectPath!] = remoteProvider;
+            objectPaths[objectPath] = remoteProvider;
             loadedProviders.push(remoteProvider);
         } catch (e) {
             log(`Failed to add search provider ${path}: ${e}`);
         }
     }
 
-    if (searchSettings.get_boolean('disable-external')) return [];
+    if (searchSettings.get_boolean('disable-external')) {
+        return [];
+    }
 
     for (const provider of FileUtils.collectFromDatadirs(
         'search-providers',
@@ -176,15 +185,18 @@ export function loadRemoteSearchProviders(
     const enabled = searchSettings.get_strv('enabled');
 
     loadedProviders = loadedProviders.filter((provider) => {
-        const appId = provider.appInfo.get_id()!;
+        const appId = provider.id;
 
-        if (provider.defaultEnabled) return !disabled.includes(appId);
-        else return enabled.includes(appId);
+        if (provider.defaultEnabled) {
+            return !disabled.includes(appId);
+        } else {
+            return enabled.includes(appId);
+        }
     });
 
     loadedProviders.sort((providerA, providerB) => {
-        const appIdA = providerA.appInfo.get_id()!;
-        const appIdB = providerB.appInfo.get_id()!;
+        const appIdA = providerA.id;
+        const appIdB = providerB.id;
 
         const idxA = sortOrder.indexOf(appIdA);
         const idxB = sortOrder.indexOf(appIdB);
@@ -198,10 +210,14 @@ export function loadRemoteSearchProviders(
         }
 
         // if providerA isn't found, it's sorted after providerB
-        if (idxA == -1) return 1;
+        if (idxA == -1) {
+            return 1;
+        }
 
         // if providerB isn't found, it's sorted after providerA
-        if (idxB == -1) return -1;
+        if (idxB == -1) {
+            return -1;
+        }
 
         // finally, if both providers are found, return their order in the list
         return idxA - idxB;
@@ -220,7 +236,7 @@ export class RemoteSearchProvider {
     searchInProgress = false;
 
     get title(): string {
-        return this.appInfo.get_name()!;
+        return this.appInfo.get_name();
     }
 
     constructor(
@@ -230,12 +246,16 @@ export class RemoteSearchProvider {
         autoStart: boolean,
         proxyInfo?: Gio.DBusInterfaceInfo
     ) {
-        if (!proxyInfo) proxyInfo = SearchProviderProxyInfo;
+        if (!proxyInfo) {
+            proxyInfo = SearchProviderProxyInfo;
+        }
 
         let gFlags = Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES;
-        if (autoStart)
+        if (autoStart) {
             gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION;
-        else gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START;
+        } else {
+            gFlags |= Gio.DBusProxyFlags.DO_NOT_AUTO_START;
+        }
 
         this.proxy = new Gio.DBusProxy({
             g_bus_type: Gio.BusType.SESSION,
@@ -248,12 +268,12 @@ export class RemoteSearchProvider {
         this.proxy.init_async(GLib.PRIORITY_DEFAULT, null);
 
         this.appInfo = appInfo;
-        this.id = appInfo.get_id()!;
+        this.id = assertNotNull(appInfo.get_id());
     }
 
-    createFallbackIcon(icon_size: number): St.Icon | null {
+    createFallbackIcon(iconSize: number): St.Icon | null {
         return new St.Icon({
-            icon_size,
+            icon_size: iconSize,
             gicon: this.appInfo.get_icon(),
         });
     }
@@ -273,7 +293,7 @@ export class RemoteSearchProvider {
                 rowStride,
                 hasAlpha,
                 bitsPerSample,
-                nChannels_,
+                _nChannels,
                 data,
             ] = meta['icon-data'];
             gicon = Shell.util_create_pixbuf_from_data(
@@ -287,12 +307,16 @@ export class RemoteSearchProvider {
             );
         }
 
-        if (gicon) icon = new St.Icon({ gicon, icon_size: size });
+        if (gicon) {
+            icon = new St.Icon({ gicon, icon_size: size });
+        }
         return icon;
     }
 
     filterResults(results: string[], maxNumber: number) {
-        if (results.length <= maxNumber) return results;
+        if (results.length <= maxNumber) {
+            return results;
+        }
 
         const regularResults = results.filter((r) => !r.startsWith('special:'));
         const specialResults = results.filter((r) => r.startsWith('special:'));
@@ -305,23 +329,32 @@ export class RemoteSearchProvider {
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetInitialResultSetRemote(
                           terms,
-                          (results: any[], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                          (results: [string[]], error: string) => {
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
                   })
                 : this.proxy.GetInitialResultSetAsync(terms, cancellable));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
+            }
             return [];
         }
     }
@@ -333,13 +366,16 @@ export class RemoteSearchProvider {
     ) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[string[]]>((resolve, reject) => {
                       this.proxy.GetSubsearchResultSetRemote(
                           previousResults,
                           newTerms,
-                          (results: any[], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                          (results: [string[]], error: string) => {
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
@@ -350,11 +386,17 @@ export class RemoteSearchProvider {
                       cancellable
                   ));
             return results;
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id}: ${error}`
                 );
+            }
             return [];
         }
     }
@@ -363,22 +405,31 @@ export class RemoteSearchProvider {
         let metas: RawMeta[];
         try {
             [metas] = await (beforeGnome43
-                ? new Promise<any[]>((resolve, reject) => {
+                ? new Promise<[RawMeta[]]>((resolve, reject) => {
                       this.proxy.GetResultMetasRemote(
                           ids,
-                          (results: any[], error: string) => {
-                              if (error) reject(error);
-                              else resolve(results);
+                          (results: [RawMeta[]], error: string) => {
+                              if (error) {
+                                  reject(error);
+                              } else {
+                                  resolve(results);
+                              }
                           },
                           cancellable
                       );
                   })
                 : this.proxy.GetResultMetasAsync(ids, cancellable));
-        } catch (error: any) {
-            if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+        } catch (error) {
+            if (
+                !(error as GLib.Error).matches(
+                    Gio.IOErrorEnum,
+                    Gio.IOErrorEnum.CANCELLED
+                )
+            ) {
                 log(
                     `Received error from D-Bus search provider ${this.id} during GetResultMetas: ${error}`
                 );
+            }
             return [];
         }
 
@@ -388,9 +439,11 @@ export class RemoteSearchProvider {
             const unpackedMeta: UnpackedMeta = {};
             for (const prop in rawMeta) {
                 // we can use the serialized icon variant directly
-                if (prop !== 'icon')
+                if (prop !== 'icon') {
                     unpackedMeta[prop] = rawMeta[prop].deepUnpack();
-                else unpackedMeta[prop] = rawMeta[prop];
+                } else {
+                    unpackedMeta[prop] = rawMeta[prop];
+                }
             }
 
             resultMetas.push({
@@ -421,7 +474,7 @@ export class RemoteSearchProvider {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
         mslog(
-            `Search provider ${this.appInfo.get_id()!} does not implement LaunchSearch`
+            `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
     }

@@ -2,10 +2,13 @@
 import Meta from 'gi://Meta';
 import * as WindowManager from 'resource:///org/gnome/shell/ui/windowManager.js';
 
+/** Meta with the preference that OverrideModule replaces */
+type WritableMeta = { prefs_get_workspaces_only_on_primary: () => boolean };
+
 /* exported OverrideModule */
 export class OverrideModule {
     orignalMetaWorkspaceOnPrimary: () => boolean;
-    windowManagersFunctionToRestore: any[];
+    windowManagersFunctionToRestore: [unknown, unknown][];
 
     constructor() {
         this.windowManagersFunctionToRestore = [];
@@ -13,12 +16,13 @@ export class OverrideModule {
         this.orignalMetaWorkspaceOnPrimary =
             Meta.prefs_get_workspaces_only_on_primary;
         // Typescript doesn't allow us to modify this method by default, but we can trick it into allowing us
-        (Meta as any).prefs_get_workspaces_only_on_primary = () => true;
+        (Meta as WritableMeta).prefs_get_workspaces_only_on_primary = () =>
+            true;
     }
 
     destroy() {
         this.restoreWindowManagersFunctions();
-        (Meta as any).prefs_get_workspaces_only_on_primary =
+        (Meta as WritableMeta).prefs_get_workspaces_only_on_primary =
             this.orignalMetaWorkspaceOnPrimary;
     }
 

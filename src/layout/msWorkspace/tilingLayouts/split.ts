@@ -84,7 +84,9 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     refreshVisibleActors() {
         // refreshVisibleActors will be called when the animation finishes
-        if (this.translationHelper.animationInProgress) return;
+        if (this.translationHelper.animationInProgress) {
+            return;
+        }
 
         for (const tileable of this.msWorkspace.tileableList) {
             if (this.activeTileableList.includes(tileable)) {
@@ -191,7 +193,9 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     tileAll(box?: Clutter.ActorBox | undefined): void {
-        if (!this.translationHelper.animationInProgress) super.tileAll(box);
+        if (!this.translationHelper.animationInProgress) {
+            super.tileAll(box);
+        }
     }
 
     /** Start a transition from one slice of visible tileables to another slice.

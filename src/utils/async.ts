@@ -49,7 +49,9 @@ export class AsyncDebounce {
      * If `f` is currently running, it cannot be cancelled.
      */
     cancel() {
-        if (this.timeoutId !== undefined) GLib.source_remove(this.timeoutId);
+        if (this.timeoutId !== undefined) {
+            GLib.source_remove(this.timeoutId);
+        }
         this.runAgain = false;
     }
 

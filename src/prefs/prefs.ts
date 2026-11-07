@@ -57,7 +57,9 @@ function keyRange(
     key: string
 ): [number, number] | null {
     const range = settings.settings_schema.get_key(key).get_range();
-    if (range.get_child_value(0).get_string()[0] !== 'range') return null;
+    if (range.get_child_value(0).get_string()[0] !== 'range') {
+        return null;
+    }
     return range.get_child_value(1).recursiveUnpack() as [number, number];
 }
 
@@ -100,14 +102,18 @@ function bindComboRow(
 
     const syncFromSettings = () => {
         const index = values.indexOf(settings.get_string(key));
-        if (index < 0 || row.selected === index) return;
+        if (index < 0 || row.selected === index) {
+            return;
+        }
         syncing = true;
         row.selected = index;
         syncing = false;
     };
 
     row.connect('notify::selected', () => {
-        if (syncing) return;
+        if (syncing) {
+            return;
+        }
         const value = values[row.selected];
         if (value !== undefined && value !== settings.get_string(key)) {
             settings.set_string(key, value);
@@ -176,7 +182,9 @@ function addColorRow(
 
     const syncFromSettings = () => {
         const rgba = new Gdk.RGBA();
-        if (rgba.parse(settings.get_string(key))) button.set_rgba(rgba);
+        if (rgba.parse(settings.get_string(key))) {
+            button.set_rgba(rgba);
+        }
     };
     syncFromSettings();
 
@@ -325,7 +333,9 @@ function captureShortcut(
             return Gdk.EVENT_STOP;
         }
 
-        if (!Gtk.accelerator_valid(keyval, mask)) return Gdk.EVENT_STOP;
+        if (!Gtk.accelerator_valid(keyval, mask)) {
+            return Gdk.EVENT_STOP;
+        }
 
         onAccelerator(
             Gtk.accelerator_name_with_keycode(null, keyval, keycode, mask)

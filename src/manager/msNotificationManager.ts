@@ -24,16 +24,17 @@ export class MsNotificationManager extends MsManager {
         this.httpSession = new Soup.Session();
     }
     check() {
-        if (getSettings('tweaks').get_boolean('disable-notifications')) return;
-        let uuid = Me.stateManager!.getState('notification-uuid');
+        if (getSettings('tweaks').get_boolean('disable-notifications')) {
+            return;
+        }
+        let uuid = Me.stateManager.getState('notification-uuid');
         if (!uuid) {
             uuid = GLib.uuid_string_random();
-            Me.stateManager!.setState('notification-uuid', uuid);
+            Me.stateManager.setState('notification-uuid', uuid);
         }
 
-        const previousCheck = Me.stateManager!.getState('notification-check')
-            ? new Date(Me.stateManager!.getState('notification-check'))
-            : new Date();
+        const lastCheck = Me.stateManager.getState('notification-check');
+        const previousCheck = lastCheck ? new Date(lastCheck) : new Date();
 
         const message = Soup.Message.new(
             'GET',
@@ -69,7 +70,7 @@ export class MsNotificationManager extends MsManager {
                 }
             }
         );
-        Me.stateManager!.setState(
+        Me.stateManager.setState(
             'notification-check',
             new Date().toISOString()
         );

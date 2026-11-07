@@ -4,13 +4,23 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as Animation from 'resource:///org/gnome/shell/ui/animation.js';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 /** Extension imports */
 
+export interface AppPlaceholderSignals extends St.Widget.SignalSignatures {
+    activated: (button: number) => void;
+}
+
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    declare connect: GObject.SignalMethods<
+        this,
+        AppPlaceholderSignals
+    >['connect'];
+    declare emit: GObject.SignalMethods<this, AppPlaceholderSignals>['emit'];
+
+    static metaInfo: MetaInfo = {
         GTypeName: 'AppPlaceholder',
         Signals: {
             activated: {
@@ -31,7 +41,7 @@ export class AppPlaceholder extends St.Widget {
     callToAction: St.Label;
     spinnerContainer: Clutter.Actor;
     vertical = true;
-    private _spinner: any;
+    private _spinner?: Animation.Spinner;
 
     constructor(icon: Clutter.Actor, textLabel: string) {
         super({
@@ -92,7 +102,9 @@ export class AppPlaceholder extends St.Widget {
                     break;
                 case Clutter.EventType.BUTTON_RELEASE:
                 case Clutter.EventType.TOUCH_END:
-                    if (this.pressed) this.activate(event.get_button());
+                    if (this.pressed) {
+                        this.activate(event.get_button());
+                    }
                     this.pressed = false;
                     break;
                 case Clutter.EventType.LEAVE:
@@ -121,7 +133,9 @@ export class AppPlaceholder extends St.Widget {
 
     setOrientation(width: number, height: number) {
         const vertical = width < height;
-        if (vertical === this.vertical) return;
+        if (vertical === this.vertical) {
+            return;
+        }
         this.vertical = vertical;
         this.box.orientation = this.vertical
             ? Clutter.Orientation.VERTICAL
@@ -161,7 +175,9 @@ export class AppPlaceholder extends St.Widget {
     }
 
     activate(button = 0) {
-        if (this.waitForReset) return;
+        if (this.waitForReset) {
+            return;
+        }
         this.waitForReset = true;
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16, {

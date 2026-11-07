@@ -1,10 +1,10 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import GnomeDesktop from 'gi://GnomeDesktop';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
@@ -12,22 +12,20 @@ import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { getExtensionSettings } from 'src/utils/extension_utils';
-import { registerGObjectClass } from 'src/utils/gjs';
+import { MetaInfo, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
-import {
-    compareVersions,
-    gnomeVersionNumber,
-    parseVersion,
-} from 'src/utils/shellVersionMatch';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
-const isBeforeGnome43 =
-    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
+/** Keeps a panel menu's own _calculateArrowSide while ours is installed. */
+type OverriddenBoxPointer = BoxPointer.BoxPointer & {
+    oldArrowSideFunction?: BoxPointer.BoxPointer['_calculateArrowSide'];
+};
+
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsStatusArea',
     };
     gnomeShellPanel: Panel.Panel;
@@ -59,13 +57,13 @@ export class MsStatusArea extends Clutter.Actor {
         this.dateMenu = assertNotNull(this.gnomeShellPanel.statusArea.dateMenu);
         this.enable();
 
-        const panelSizeSignal = Me.msThemeManager!.connect(
+        const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => this.onPanelSizeChanged()
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(panelSizeSignal);
+            Me.msThemeManager.disconnect(panelSizeSignal);
             this.restoreAppIndicatorSettings();
         });
 
@@ -101,7 +99,9 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     restoreAppIndicatorSettings() {
-        if (this.originalAppIndicatorIconSize === undefined) return;
+        if (this.originalAppIndicatorIconSize === undefined) {
+            return;
+        }
         // Restoring the settings won't actually work most of the time.
         // Since we don't get a proper signal when shutting down gnome-shell (when logging out, or gnome-shell crashes, etc.)
         // we can't reliably restore the settings. But it might still be useful if a user tries material shell for a few minutes
@@ -206,7 +206,6 @@ export class MsStatusArea extends Clutter.Actor {
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
             Debug.logFocus(mainChild);
-            Debug.logFocus(Panel.QuickSettings);
             if (
                 mainChild instanceof
                 assertNotNull(this.gnomeShellPanel.statusArea.quickSettings)
@@ -249,17 +248,23 @@ export class MsStatusArea extends Clutter.Actor {
         this.gnomeShellPanel._rightBox.disconnect(signalIds.rightBoxActor);
 
         this.leftBoxActors.forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._leftBox);
         });
         this.centerBoxActors.forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._centerBox);
         });
         this.rightBoxActors.reverse().forEach((actor) => {
-            if (!actor) return;
+            if (!actor) {
+                return;
+            }
             this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._rightBox);
         });
@@ -268,7 +273,7 @@ export class MsStatusArea extends Clutter.Actor {
     iconSize() {
         return Math.max(
             16.0,
-            Math.round(Me.msThemeManager!.getPanelSizeNotScaled() / 3)
+            Math.round(Me.msThemeManager.getPanelSizeNotScaled() / 3)
         );
     }
 
@@ -342,10 +347,11 @@ export class MsStatusArea extends Clutter.Actor {
             const menu = menuData;
 
             if (menu._boxPointer) {
-                (menu._boxPointer as any).oldArrowSideFunction =
-                    menu._boxPointer._calculateArrowSide;
+                (
+                    menu._boxPointer as OverriddenBoxPointer
+                ).oldArrowSideFunction = menu._boxPointer._calculateArrowSide;
                 menu._boxPointer._calculateArrowSide = function () {
-                    return Me.msThemeManager!.verticalPanelPosition ===
+                    return Me.msThemeManager.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
                         ? St.Side.LEFT
                         : St.Side.RIGHT;
@@ -358,11 +364,14 @@ export class MsStatusArea extends Clutter.Actor {
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
             const menu = menuData;
 
-            if (menu._boxPointer) {
-                menu._boxPointer._calculateArrowSide = (
-                    menu._boxPointer as any
-                ).oldArrowSideFunction;
-                delete (menu._boxPointer as any).oldArrowSideFunction;
+            // Menus added to the panel after overridePanelMenuSide have
+            // nothing saved; assigning undefined would shadow the prototype
+            // method and break them.
+            const boxPointer = menu._boxPointer as OverriddenBoxPointer;
+            if (boxPointer && boxPointer.oldArrowSideFunction !== undefined) {
+                boxPointer._calculateArrowSide =
+                    boxPointer.oldArrowSideFunction;
+                delete boxPointer.oldArrowSideFunction;
             }
         }
     }
@@ -381,12 +390,12 @@ export class MsStatusArea extends Clutter.Actor {
 
 @registerGObjectClass
 export class MsDateMenuBox extends St.Widget {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
+    static metaInfo: MetaInfo = {
         GTypeName: 'MsDateMenuBox',
     };
     dateMenu: DateMenu.DateMenuButton;
     indicatorActor: DateMenu.MessagesIndicator;
-    private _wallClock: any;
+    private _wallClock?: GnomeDesktop.WallClock;
     clockLabel: St.Label;
     notificationIcon: St.Icon;
     notificationIconRing: St.Icon;
@@ -435,16 +444,16 @@ export class MsDateMenuBox extends St.Widget {
         this.iconDisplay.add_child(this.notificationIcon);
         this.iconDisplay.add_child(this.notificationIconRing);
         this.iconDisplay.add_child(this.dndIcon);
-        if (Me.msThemeManager!.clockHorizontal) {
+        if (Me.msThemeManager.clockHorizontal) {
             this.add_child(this.iconDisplay);
         } else {
             this.add_child(this.clockLabel);
         }
 
-        const clockHorizontalSignal = Me.msThemeManager!.connect(
+        const clockHorizontalSignal = Me.msThemeManager.connect(
             'clock-horizontal-changed',
             () => {
-                if (Me.msThemeManager!.clockHorizontal) {
+                if (Me.msThemeManager.clockHorizontal) {
                     this.remove_child(this.clockLabel);
                     this.add_child(this.iconDisplay);
                 } else {
@@ -468,9 +477,9 @@ export class MsDateMenuBox extends St.Widget {
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(clockHorizontalSignal);
+            Me.msThemeManager.disconnect(clockHorizontalSignal);
             this.indicatorActor.disconnect(this.indicatorSignal);
-            this._wallClock.disconnect(this.dateMenuSignal);
+            assertNotNull(this._wallClock).disconnect(this.dateMenuSignal);
             delete this._wallClock;
         });
     }
@@ -482,10 +491,12 @@ export class MsDateMenuBox extends St.Widget {
          *
          * Deliberately separates HH:MM into distinct sections
          */
-        const clockSections: string[] = this._wallClock.clock
-            .replace(/∶/g, ' ')
+        const clockSections: string[] = assertNotNull(this._wallClock)
+            .clock.replace(/∶/g, ' ')
             .split(' ');
-        if (!clockSections[0]) clockSections.shift();
+        if (!clockSections[0]) {
+            clockSections.shift();
+        }
         const markup = clockSections
             .map((section) => `<span>${section}</span>`)
             .join('\n');
@@ -496,7 +507,7 @@ export class MsDateMenuBox extends St.Widget {
     updateVisibility() {
         const doNotDisturb = !this._settings.get_boolean('show-banners');
         if (this.indicatorActor.visible) {
-            if (Me.msThemeManager!.clockHorizontal) {
+            if (Me.msThemeManager.clockHorizontal) {
                 if (doNotDisturb) {
                     this.dndIcon.show();
                     this.notificationIconRing.hide();
@@ -512,16 +523,20 @@ export class MsDateMenuBox extends St.Widget {
                     }
                     return;
                 }
-                if (this.clockLabel.has_style_class_name('primary')) return;
+                if (this.clockLabel.has_style_class_name('primary')) {
+                    return;
+                }
                 this.clockLabel.add_style_class_name('primary');
             }
         } else {
-            if (Me.msThemeManager!.clockHorizontal) {
+            if (Me.msThemeManager.clockHorizontal) {
                 this.notificationIcon.show();
                 this.notificationIconRing.hide();
                 this.dndIcon.hide();
             } else {
-                if (!this.clockLabel.has_style_class_name('primary')) return;
+                if (!this.clockLabel.has_style_class_name('primary')) {
+                    return;
+                }
                 this.clockLabel.remove_style_class_name('primary');
             }
         }
