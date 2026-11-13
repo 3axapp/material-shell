@@ -641,11 +641,13 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    activate() {
+    activate(options: { byUser?: boolean } = {}) {
         const workspace = this.workspace;
         if (workspace === null) {
             return;
         }
+        const focusManager = Me.msWindowManager.msFocusManager;
+        focusManager.cancelPendingFocus();
 
         if (
             this.tileableFocused instanceof MsWindow &&
@@ -667,7 +669,12 @@ export class MsWorkspace extends WithSignals {
         // had the keyboard. A wayland client merely stops repeating, but an
         // XWayland one latches the key in the X server and autorepeats it locally
         // until a key event of its own finally arrives.
-        Me.msWindowManager.msFocusManager.releaseOwnKeyFocus();
+        focusManager.releaseOwnKeyFocus();
+        if (options.byUser && this.tileableFocused === this.appLauncher) {
+            focusManager.focusOnceShortcutReleased(
+                this.appLauncher.appListContainer.inputContainer
+            );
+        }
     }
 
     setMonitor(monitor: Monitor) {

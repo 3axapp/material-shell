@@ -16,6 +16,20 @@ import {
     MsWindowManagerType,
 } from './msWindowManager';
 
+const SHORTCUT_MODIFIERS =
+    Clutter.ModifierType.SHIFT_MASK |
+    Clutter.ModifierType.CONTROL_MASK |
+    Clutter.ModifierType.MOD1_MASK |
+    Clutter.ModifierType.MOD4_MASK |
+    Clutter.ModifierType.SUPER_MASK |
+    Clutter.ModifierType.HYPER_MASK |
+    Clutter.ModifierType.META_MASK;
+
+function shortcutModifiersHeld(): boolean {
+    const [, , modifiers] = global.get_pointer();
+    return (modifiers & SHORTCUT_MODIFIERS) !== 0;
+}
+
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
     msWindowManager: MsWindowManagerType;
@@ -26,6 +40,7 @@ export class MsFocusManager extends MsManager {
      * does not hand it straight back to the actor we are giving up on.
      */
     releasingKeyFocus?: boolean;
+    pendingFocusCancel: (() => void) | null = null;
     actorGrabMap: Map<Clutter.Actor, boolean | Clutter.Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
@@ -185,6 +200,71 @@ export class MsFocusManager extends MsManager {
         this.lastKeyFocus = null;
         global.stage.set_key_focus(null);
         delete this.releasingKeyFocus;
+    }
+
+    /**
+     * Hand the keyboard to one of our actors, but only once the shortcut which
+     * asked for it is let go.
+     *
+     * Taking it while the shortcut is still down leaks the shortcut keys to the
+     * focused window, and an XWayland one may latch them. Waiting for the
+     * modifiers is enough: the shortcut's own key went to the shell, the window
+     * never saw it go down. The focused window is unset as well, so that mutter
+     * does not keep treating it as focused while we hold the keyboard.
+     *
+     * Given up when another window gets the focus meanwhile, or on the next call.
+     */
+    focusOnceShortcutReleased(actor: Clutter.Actor): void {
+        this.cancelPendingFocus();
+        const take = () => {
+            this.cancelPendingFocus();
+            global.display.unset_input_focus(global.get_current_time());
+            actor.grab_key_focus();
+        };
+        if (!shortcutModifiersHeld()) {
+            take();
+            return;
+        }
+
+        const keymap = global.stage
+            .get_context()
+            .get_backend()
+            .get_default_seat()
+            .get_keymap();
+        const focusWindowAtStart = global.display.focus_window;
+        const keymapId = keymap.connect('state-changed', () => {
+            if (!shortcutModifiersHeld()) {
+                take();
+            }
+        });
+        const focusWindowId = global.display.connect(
+            'notify::focus-window',
+            () => {
+                const focusWindow = global.display.focus_window;
+                if (focusWindow && focusWindow !== focusWindowAtStart) {
+                    this.cancelPendingFocus();
+                }
+            }
+        );
+        const destroyId = actor.connect('destroy', () => {
+            this.cancelPendingFocus();
+        });
+        this.pendingFocusCancel = () => {
+            keymap.disconnect(keymapId);
+            global.display.disconnect(focusWindowId);
+            actor.disconnect(destroyId);
+        };
+    }
+
+    cancelPendingFocus(): void {
+        const cancel = this.pendingFocusCancel;
+        this.pendingFocusCancel = null;
+        cancel?.();
+    }
+
+    override destroy(): void {
+        this.cancelPendingFocus();
+        super.destroy();
     }
 
     setFocusToMsWindow(msWindow: MsWindow): void {

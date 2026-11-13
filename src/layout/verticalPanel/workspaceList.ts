@@ -89,10 +89,14 @@ export class WorkspaceList extends St.Widget {
         this.connect('scroll-event', (_, event) => {
             switch (event.get_scroll_direction()) {
                 case Clutter.ScrollDirection.UP:
-                    this.msWorkspaceManager.activatePreviousMsWorkspace();
+                    this.msWorkspaceManager.activatePreviousMsWorkspace({
+                        byUser: true,
+                    });
                     break;
                 case Clutter.ScrollDirection.DOWN:
-                    this.msWorkspaceManager.activateNextMsWorkspace();
+                    this.msWorkspaceManager.activateNextMsWorkspace({
+                        byUser: true,
+                    });
                     break;
             }
         });
@@ -249,7 +253,7 @@ export class WorkspaceButton extends MatButton {
         );
 
         this.connect('primary-action', () => {
-            this.msWorkspace.activate();
+            this.msWorkspace.activate({ byUser: true });
         });
         this.connect('secondary-action', () => {
             this.menu.menu.toggle();

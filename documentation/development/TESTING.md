@@ -171,16 +171,23 @@ run(async () => {
   `watchMenus()`: меню, которое осталось mapped закрытым, будет в следующем
   кадре.
 
-Что ещё проверено в спайке, но в тесты пока не вынесено:
-
-- **Хоткеи.** Виртуальная клавиатура
-  `global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE)`
-  и её `notify_keyval()` нажимают сочетания: `Super+S` переключил стол.
+- **Хоткеи** нажимает виртуальная клавиатура
+  `global.stage.get_context().get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE)`
+  и её `notify_keyval()`. Клавиши, которые mutter отдаёт окну, фильтр
+  `Clutter.Event.add_filter` расширения не видит: что дошло до окна, пусть
+  записывает сам клиент. Модификаторы — `global.get_pointer()[2]`, у
+  `Clutter.Keymap` в GNOME 51 нет `get_modifier_state()`. Клик с зажатым
+  Super mutter понимает как перетаскивание окна, а не как клик. Пример —
+  `workspace-switch-keyboard.test.js`.
+- **Метка времени для `metaWindow.activate()`** — из
+  `global.display.get_current_time_roundtrip()`: с
+  `global.get_current_time()` mutter активацию молча отбрасывает.
 
 ### Чего эти тесты не заменят
 
 Клавиатура во вложенный шелл приходит через окно Mdk или через виртуальное
-устройство, а не с настоящего железа. Поэтому залипание клавиш и фокус
+устройство, а не с настоящего железа. Утечку клавиш хоткея в окно тест
+увидит, а настоящий автоповтор — нет. Поэтому залипание клавиш и фокус
 Wayland-клиентов ([#2](https://github.com/3axapp/material-shell/issues/2),
 [#10](https://github.com/3axapp/material-shell/issues/10)) финально
 проверяются в настоящей сессии, как и работа с реальными мониторами.
