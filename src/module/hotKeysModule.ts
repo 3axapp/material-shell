@@ -94,12 +94,14 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.PREVIOUS_WORKSPACE,
             () => {
-                Me.msWorkspaceManager.activatePreviousMsWorkspace();
+                Me.msWorkspaceManager.activatePreviousMsWorkspace({
+                    byUser: true,
+                });
             }
         );
 
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WORKSPACE, () => {
-            Me.msWorkspaceManager.activateNextMsWorkspace();
+            Me.msWorkspaceManager.activateNextMsWorkspace({ byUser: true });
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
@@ -107,7 +109,9 @@ export class HotKeysModule {
                 this.workspaceManager.get_active_workspace_index();
             const lastIndex = this.workspaceManager.n_workspaces - 1;
             if (currentIndex < lastIndex) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
+                Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate({
+                    byUser: true,
+                });
             }
         });
 
@@ -538,7 +542,7 @@ export class HotKeysModule {
 
                 Me.msWorkspaceManager.primaryMsWorkspaces[
                     nextWorkspaceIndex
-                ].activate();
+                ].activate({ byUser: true });
             });
         });
 

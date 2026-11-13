@@ -641,11 +641,13 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    activate() {
+    activate(options: { byUser?: boolean } = {}) {
         const workspace = this.workspace;
         if (workspace === null) {
             return;
         }
+        const focusManager = Me.msWindowManager.msFocusManager;
+        focusManager.cancelPendingFocus();
 
         if (
             this.tileableFocused instanceof MsWindow &&
@@ -658,12 +660,20 @@ export class MsWorkspace extends WithSignals {
             );
         } else {
             workspace.activate(global.get_current_time());
-            // grab the tileable to prevent other window to take focus (eg: In multi-monitor setup if an window is opened on external monitor, switching to empty workspace or workspace with placeholder focused would result on focus being highjacked by the real window on external monitor instead)
-            const grab = global.stage.grab(this.tileableFocused);
-            // Focus the tileable that is selected
-            this.refreshFocus();
-            // Dismiss the grab
-            grab.dismiss();
+        }
+
+        // Let go of the keyboard instead of handing it to the tileable which is now
+        // displayed. While one of our actors holds the clutter key focus mutter
+        // stops forwarding key events to wayland clients, so the release of the
+        // shortcut which asked for this switch would never reach the window which
+        // had the keyboard. A wayland client merely stops repeating, but an
+        // XWayland one latches the key in the X server and autorepeats it locally
+        // until a key event of its own finally arrives.
+        focusManager.releaseOwnKeyFocus();
+        if (options.byUser && this.tileableFocused === this.appLauncher) {
+            focusManager.focusOnceShortcutReleased(
+                this.appLauncher.appListContainer.inputContainer
+            );
         }
     }
 

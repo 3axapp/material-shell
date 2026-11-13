@@ -865,29 +865,29 @@ export class MsWorkspaceManager extends MsManager {
         return types.includes(metaWindow.window_type);
     }
 
-    activateNextMsWorkspace() {
+    activateNextMsWorkspace(options: { byUser?: boolean } = {}) {
         const currentIndex = this.workspaceManager.get_active_workspace_index();
         if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-            this.primaryMsWorkspaces[currentIndex + 1].activate();
+            this.primaryMsWorkspaces[currentIndex + 1].activate(options);
             return;
         }
 
         if (this.shouldCycleWorkspacesNavigation()) {
-            this.primaryMsWorkspaces[0].activate();
+            this.primaryMsWorkspaces[0].activate(options);
         }
     }
 
-    activatePreviousMsWorkspace() {
+    activatePreviousMsWorkspace(options: { byUser?: boolean } = {}) {
         const currentIndex = this.workspaceManager.get_active_workspace_index();
         if (currentIndex > 0) {
-            this.primaryMsWorkspaces[currentIndex - 1].activate();
+            this.primaryMsWorkspaces[currentIndex - 1].activate(options);
             return;
         }
 
         if (this.shouldCycleWorkspacesNavigation()) {
             this.primaryMsWorkspaces[
                 this.workspaceManager.n_workspaces - 1
-            ].activate();
+            ].activate(options);
         }
     }
 

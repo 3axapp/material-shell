@@ -16,12 +16,31 @@ import {
     MsWindowManagerType,
 } from './msWindowManager';
 
+const SHORTCUT_MODIFIERS =
+    Clutter.ModifierType.SHIFT_MASK |
+    Clutter.ModifierType.CONTROL_MASK |
+    Clutter.ModifierType.MOD1_MASK |
+    Clutter.ModifierType.MOD4_MASK |
+    Clutter.ModifierType.SUPER_MASK |
+    Clutter.ModifierType.HYPER_MASK |
+    Clutter.ModifierType.META_MASK;
+
+function shortcutModifiersHeld(): boolean {
+    const [, , modifiers] = global.get_pointer();
+    return (modifiers & SHORTCUT_MODIFIERS) !== 0;
+}
+
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
     msWindowManager: MsWindowManagerType;
     lastMsWindowFocused: MsWindow | null = null;
     lastKeyFocus: Clutter.Actor | null = null;
     focusProtected?: boolean;
+    /** Set while we drop the key focus ourselves, so that the protection below
+     * does not hand it straight back to the actor we are giving up on.
+     */
+    releasingKeyFocus?: boolean;
+    pendingFocusCancel: (() => void) | null = null;
     actorGrabMap: Map<Clutter.Actor, boolean | Clutter.Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
@@ -56,6 +75,9 @@ export class MsFocusManager extends MsManager {
 
     onKeyFocus(): void {
         const keyFocus = global.stage.key_focus;
+        if (this.releasingKeyFocus) {
+            return;
+        }
         if (!keyFocus) {
             if (
                 this.focusProtected &&
@@ -68,7 +90,12 @@ export class MsFocusManager extends MsManager {
                 // holds the key focus mutter stops forwarding key events to wayland
                 // clients, so the release of the shortcut key never reaches the focused
                 // window and stays stuck down for it.
-                if (!this.isOnDisplayedMsWorkspace(this.lastKeyFocus)) {
+                if (!this.isOnActivePrimaryMsWorkspace(this.lastKeyFocus)) {
+                    Debug.logFocus(
+                        'Focus Protected, drop the stale focus of ',
+                        this.lastKeyFocus
+                    );
+
                     this.lastKeyFocus = null;
                     return;
                 }
@@ -113,18 +140,131 @@ export class MsFocusManager extends MsManager {
     }
 
     /**
-     * Whether the actor still lives on a workspace which is currently displayed.
+     * Whether the actor still lives on the active workspace of the primary monitor.
+     * The focus protection is only ever armed by a workspace switch, which happens on
+     * the primary monitor, so an actor of any other workspace is stale. Asking
+     * isDisplayed() here would not do: it reports every workspace of an external
+     * monitor as displayed, which left the whole check without effect as soon as a
+     * second monitor was connected.
      * Actors outside of any msWorkspace (panels, overlays) are never stale.
      */
-    isOnDisplayedMsWorkspace(actor: Clutter.Actor): boolean {
+    isOnActivePrimaryMsWorkspace(actor: Clutter.Actor): boolean {
         let current: Clutter.Actor | null = actor;
         while (current !== null) {
             if (current instanceof MsWorkspaceActor) {
-                return current.msWorkspace.isDisplayed();
+                return (
+                    current.msWorkspace ===
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace()
+                );
             }
             current = current.get_parent();
         }
         return true;
+    }
+
+    /**
+     * Whether the actor belongs to one of our msWorkspaces rather than to the rest
+     * of the shell.
+     */
+    isOwnWorkspaceActor(actor: Clutter.Actor): boolean {
+        let current: Clutter.Actor | null = actor;
+        while (current !== null) {
+            if (current instanceof MsWorkspaceActor) {
+                return true;
+            }
+            current = current.get_parent();
+        }
+        return false;
+    }
+
+    /**
+     * Give up the clutter key focus when one of our own actors holds it.
+     *
+     * While a shell actor holds it mutter stops forwarding key events to wayland
+     * clients altogether, so the release of a shortcut key never reaches the window
+     * which had the keyboard and an XWayland client keeps the key latched in the X
+     * server. Nothing in mutter ever clears the clutter key focus, so an actor which
+     * stays on screen, like the app launcher of an external monitor, keeps it across
+     * workspace switches: we are the only ones who can let it go.
+     *
+     * Actors of the rest of the shell are left alone, their keyboard is none of our
+     * business.
+     */
+    releaseOwnKeyFocus(): void {
+        const keyFocus = global.stage.key_focus;
+        if (keyFocus === null || !this.isOwnWorkspaceActor(keyFocus)) {
+            return;
+        }
+
+        this.releasingKeyFocus = true;
+        this.lastKeyFocus = null;
+        global.stage.set_key_focus(null);
+        delete this.releasingKeyFocus;
+    }
+
+    /**
+     * Hand the keyboard to one of our actors, but only once the shortcut which
+     * asked for it is let go.
+     *
+     * Taking it while the shortcut is still down leaks the shortcut keys to the
+     * focused window, and an XWayland one may latch them. Waiting for the
+     * modifiers is enough: the shortcut's own key went to the shell, the window
+     * never saw it go down. The focused window is unset as well, so that mutter
+     * does not keep treating it as focused while we hold the keyboard.
+     *
+     * Given up when another window gets the focus meanwhile, or on the next call.
+     */
+    focusOnceShortcutReleased(actor: Clutter.Actor): void {
+        this.cancelPendingFocus();
+        const take = () => {
+            this.cancelPendingFocus();
+            global.display.unset_input_focus(global.get_current_time());
+            actor.grab_key_focus();
+        };
+        if (!shortcutModifiersHeld()) {
+            take();
+            return;
+        }
+
+        const keymap = global.stage
+            .get_context()
+            .get_backend()
+            .get_default_seat()
+            .get_keymap();
+        const focusWindowAtStart = global.display.focus_window;
+        const keymapId = keymap.connect('state-changed', () => {
+            if (!shortcutModifiersHeld()) {
+                take();
+            }
+        });
+        const focusWindowId = global.display.connect(
+            'notify::focus-window',
+            () => {
+                const focusWindow = global.display.focus_window;
+                if (focusWindow && focusWindow !== focusWindowAtStart) {
+                    this.cancelPendingFocus();
+                }
+            }
+        );
+        const destroyId = actor.connect('destroy', () => {
+            this.cancelPendingFocus();
+        });
+        this.pendingFocusCancel = () => {
+            keymap.disconnect(keymapId);
+            global.display.disconnect(focusWindowId);
+            actor.disconnect(destroyId);
+        };
+    }
+
+    cancelPendingFocus(): void {
+        const cancel = this.pendingFocusCancel;
+        this.pendingFocusCancel = null;
+        cancel?.();
+    }
+
+    override destroy(): void {
+        this.cancelPendingFocus();
+        super.destroy();
     }
 
     setFocusToMsWindow(msWindow: MsWindow): void {
