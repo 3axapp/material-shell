@@ -15,7 +15,6 @@ import { MatButton } from 'src/widget/material/button';
 import { formatDateWithCFormatString } from 'resource:///org/gnome/shell/misc/dateUtils.js';
 /** Extension imports */
 import { default as Me } from 'src/extension';
-import { probe } from 'src/utils/probe10';
 
 /* exported MsApplicationLauncher */
 
@@ -61,19 +60,9 @@ export class MsApplicationLauncher extends St.Widget {
             }
         );
         this.connect('key-focus-in', () => {
-            probe(
-                'launcher key-focus-in mon' + this.msWorkspace.monitor.index,
-                'external=' + this.msWorkspace.monitorIsExternal
-            );
             this.appListContainer.inputContainer.grab_key_focus();
         });
         this.connect('parent-set', () => {
-            probe(
-                'launcher parent-set mon' + this.msWorkspace.monitor.index,
-                'external=' + this.msWorkspace.monitorIsExternal,
-                'isFocusedTileable=' +
-                    (this.msWorkspace.tileableFocused === this)
-            );
             if (this.msWorkspace.tileableFocused === this) {
                 this.grab_key_focus();
             }

@@ -11,7 +11,6 @@ import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
 
 import { Debug } from 'src/utils/debug';
-import { describeActor, describeFocusWindow, probe } from 'src/utils/probe10';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
@@ -61,14 +60,9 @@ export class MsFocusManager extends MsManager {
 
     onKeyFocus(): void {
         const keyFocus = global.stage.key_focus;
-        probe(
-            'onKeyFocus new=' + describeActor(keyFocus),
-            'last=' + describeActor(this.lastKeyFocus),
-            'lastMsWindow=' + (this.lastMsWindowFocused ?? 'null'),
-            'protected=' + (this.focusProtected ? 'yes' : 'no'),
-            'focusWindow=' + describeFocusWindow()
-        );
-        if (this.releasingKeyFocus) return;
+        if (this.releasingKeyFocus) {
+            return;
+        }
         if (!keyFocus) {
             if (
                 this.focusProtected &&
@@ -86,7 +80,6 @@ export class MsFocusManager extends MsManager {
                         'Focus Protected, drop the stale focus of ',
                         this.lastKeyFocus
                     );
-                    probe('DROP ' + describeActor(this.lastKeyFocus));
 
                     this.lastKeyFocus = null;
                     return;
@@ -96,7 +89,6 @@ export class MsFocusManager extends MsManager {
                     'Focus Protected, restore focus to ',
                     this.lastKeyFocus
                 );
-                probe('RESTORE ' + describeActor(this.lastKeyFocus));
 
                 return this.lastKeyFocus.grab_key_focus();
             }
@@ -147,7 +139,7 @@ export class MsFocusManager extends MsManager {
             if (current instanceof MsWorkspaceActor) {
                 return (
                     current.msWorkspace ===
-                    Me.msWorkspaceManager!.getActivePrimaryMsWorkspace()
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace()
                 );
             }
             current = current.get_parent();
@@ -162,7 +154,9 @@ export class MsFocusManager extends MsManager {
     isOwnWorkspaceActor(actor: Clutter.Actor): boolean {
         let current: Clutter.Actor | null = actor;
         while (current !== null) {
-            if (current instanceof MsWorkspaceActor) return true;
+            if (current instanceof MsWorkspaceActor) {
+                return true;
+            }
             current = current.get_parent();
         }
         return false;
@@ -183,9 +177,10 @@ export class MsFocusManager extends MsManager {
      */
     releaseOwnKeyFocus(): void {
         const keyFocus = global.stage.key_focus;
-        if (keyFocus === null || !this.isOwnWorkspaceActor(keyFocus)) return;
+        if (keyFocus === null || !this.isOwnWorkspaceActor(keyFocus)) {
+            return;
+        }
 
-        probe('releaseOwnKeyFocus ' + describeActor(keyFocus));
         this.releasingKeyFocus = true;
         this.lastKeyFocus = null;
         global.stage.set_key_focus(null);
